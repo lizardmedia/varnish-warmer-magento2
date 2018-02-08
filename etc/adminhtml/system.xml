@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+@author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+@copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+    <system>
+        <tab id="lm_varnish" translate="label" sortOrder="300">
+            <label>LizardMedia Varnish</label>
+        </tab>
+        <section id="lm_varnish"  showInDefault="1" translate="label">
+            <tab>lm_varnish</tab>
+            <label>Varnish Cache Warmer</label>
+            <resource>LizardMedia_VarnishWarmer::settings</resource>
+            <group id="general" showInDefault="1" translate="label">
+                <label>General</label>
+                <field id="max_concurrent_regeneration" type="text" showInDefault="1" translate="label">
+                    <label>Number of concurrent regeneration processes</label>
+                </field>
+                <field id="max_concurrent_purge" type="text" showInDefault="1" translate="label">
+                    <label>Number of concurrent purge processes</label>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

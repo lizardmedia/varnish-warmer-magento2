@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<!--
+@author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+@copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!--Console commands section-->
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="cache-refresh-url"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeUrlCommand</item>
+                <item name="cache-purge-products"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\RegenerateProductsCacheCommand</item>
+                <item name="cache-purge-homepage"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeHomepageCommand</item>
+                <item name="cache-purge-all"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeAllCommand</item>
+                <item name="cache-purge-general"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeGeneralCommand</item>
+                <item name="cache-purge-wildcard"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeWildcardCommand</item>
+                <item name="cache-purge-force"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Console\Command\PurgeWildcardWithoutRegenerationCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <!--End of console commands section-->
+
+    <!--Preference section-->
+    <preference for="LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface"
+                type="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface"
+                type="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlPurger" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface"
+                type="LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\Config\PurgeWithoutRegenNotificationMailerConfigProviderInterface"
+                type="LizardMedia\VarnishWarmer\Model\Config\PurgeWithoutRegenNotificationMailerConfigProvider" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\LockHandler\LockInterface"
+                type="LizardMedia\VarnishWarmer\Model\LockHandler\FileLock" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\UrlProvider\CategoryUrlProviderInterface"
+                type="LizardMedia\VarnishWarmer\Model\UrlProvider\CategoryUrlProvider" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\UrlProvider\ProductUrlProviderInterface"
+                type="LizardMedia\VarnishWarmer\Model\UrlProvider\ProductUrlProvider" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressDataInterface"
+                type="LizardMedia\VarnishWarmer\Model\ProgressHandler\ProgressData" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface"
+                type="LizardMedia\VarnishWarmer\Model\ProgressHandler\FileQueueProgressLogger" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface"
+                type="LizardMedia\VarnishWarmer\Model\ProgressHandler\ProgressBarRenderer" />
+    <!--End of preference section-->
+
+    <!--Constructor argument injection section-->
+    <type name="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlPurger">
+        <arguments>
+            <argument name="logger"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Logger\PurgeLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator">
+        <arguments>
+            <argument name="logger"
+                      xsi:type="object">LizardMedia\VarnishWarmer\Logger\RegenerationLogger</argument>
+        </arguments>
+    </type>
+    <!--End of constructor argument injection section-->
+
+    <!--Loggers and handlers section-->
+    <type name="LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="LizardMedia\VarnishWarmer\Logger\PurgeLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">cachePurgeLogger</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="LizardMedia\VarnishWarmer\Logger\Handler\RegenerationHandler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="LizardMedia\VarnishWarmer\Logger\RegenerationLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">cacheRegenerationLogger</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\RegenerationHandler</item>
+            </argument>
+        </arguments>
+    </type>
+    <!--End of loggers and handlers section-->
+
+</config>

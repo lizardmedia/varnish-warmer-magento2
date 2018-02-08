@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+@author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+@copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="LizardMedia_VarnishWarmer::main_menu"
+             title="Lizard Media Varnish Warmer"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="80"
+             resource="LizardMedia_VarnishWarmer::main_menu" />
+
+        <add id="LizardMedia_VarnishWarmer::purge_homepage"
+             title="Varnish: purge HP"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="1"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purge/purgehomepage"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+        <add id="LizardMedia_VarnishWarmer::purge_general"
+             title="Varnish: purge HP, Categories"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="2"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purge/purgegeneral"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+        <add id="LizardMedia_VarnishWarmer::purge_all"
+             title="Varnish: purge HP, Categories, Products (long)"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="3"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purge/purgeall"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+        <add id="LizardMedia_VarnishWarmer::purge_wildcard"
+             title="Varnish: purge * (longest)"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="4"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purge/purgewildcard"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+        <add id="LizardMedia_VarnishWarmer::purge_wildcard_force"
+             title="Varnish: purge * (force)"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="5"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purge/purgewildcardforce"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+        <add id="LizardMedia_VarnishWarmer::form_purge_single"
+             title="Varnish: purge single URL"
+             module="LizardMedia_VarnishWarmer"
+             sortOrder="6"
+             parent="LizardMedia_VarnishWarmer::main_menu"
+             action="lizardmediavarnish/purgesingle/form"
+             resource="LizardMedia_VarnishWarmer::cache_handling"
+        />
+    </menu>
+</config>

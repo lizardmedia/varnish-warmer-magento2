@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+@author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+@copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <lm_varnish>
+            <general>
+                <max_concurrent_regeneration>10</max_concurrent_regeneration>
+                <max_concurrent_purge>4</max_concurrent_purge>
+            </general>
+        </lm_varnish>
+    </default>
+</config>

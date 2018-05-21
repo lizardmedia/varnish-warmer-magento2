@@ -6,8 +6,9 @@
  * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
  */
 
-namespace LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit;
+namespace LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeMultiple\Form\Edit;
 
+use LizardMedia\VarnishWarmer\Model\FormDataProvider\MultipleUrlsPurgeCommandsProvider;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Block\Widget\Form as WidgetForm;
 use Magento\Backend\Block\Widget\Form\Generic;
@@ -18,13 +19,12 @@ use Magento\Store\Model\System\Store;
 
 /**
  * Class Form
- * @package LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit
+ * @package LizardMedia\VarnishWarmer\Block\Adminhtml\Form\PurgeMultiple
  */
 class Form extends Generic
 {
-    const URL_FORM_PARAM = 'url';
+    const PROCESS_URL_FORM_PARAM = 'process_url';
     const STORE_VIEW_FORM_PARAM = 'store_id';
-    const FORCE_PURGE_FORM_PARAM = 'force_purge';
 
     /**
      * @var Store
@@ -32,11 +32,17 @@ class Form extends Generic
     private $systemStore;
 
     /**
+     * @var MultipleUrlsPurgeCommandsProvider
+     */
+    private $multipleUrlsPurgeCommandsProvider;
+
+    /**
      * Form constructor.
      * @param Context $context
      * @param Registry $registry
      * @param FormFactory $formFactory
      * @param Store $systemStore
+     * @param MultipleUrlsPurgeCommandsProvider $multipleUrlsPurgeCommandsProvider
      * @param array $data
      */
     public function __construct(
@@ -44,10 +50,12 @@ class Form extends Generic
         Registry $registry,
         FormFactory $formFactory,
         Store $systemStore,
+        MultipleUrlsPurgeCommandsProvider $multipleUrlsPurgeCommandsProvider,
         array $data = []
     ) {
         parent::__construct($context, $registry, $formFactory, $data);
         $this->systemStore = $systemStore;
+        $this->multipleUrlsPurgeCommandsProvider = $multipleUrlsPurgeCommandsProvider;
     }
 
     /**
@@ -56,8 +64,8 @@ class Form extends Generic
     protected function _construct()
     {
         parent::_construct();
-        $this->setId('purgesingle_form');
-        $this->setTitle(__('Varnish: purge single URL'));
+        $this->setId('purgemultiple_form');
+        $this->setTitle(__('Varnish: purge a group of URLs'));
     }
 
     /**
@@ -77,7 +85,7 @@ class Form extends Generic
             ]
         );
 
-        $form->setHtmlIdPrefix('purgesingle_');
+        $form->setHtmlIdPrefix('purgemultiple_');
 
         $fieldset = $form->addFieldset(
             'base_fieldset',
@@ -87,14 +95,14 @@ class Form extends Generic
         );
 
         $fieldset->addField(
-            self::URL_FORM_PARAM,
-            'text',
+            self::PROCESS_URL_FORM_PARAM,
+            'select',
             [
-                'name' => self::URL_FORM_PARAM,
-                'label' => __('URL to purge'),
-                'title' => __('URL to purge'),
-                'required' => false,
-                'note' => __('Relative URL, e.g. * or bizuteria. If empty, homepage will be purged')
+                'name' => self::PROCESS_URL_FORM_PARAM,
+                'label' => __('Process to run'),
+                'title' => __('Process to run'),
+                'required' => true,
+                'values' => $this->multipleUrlsPurgeCommandsProvider->getCommandArray()
 
             ]
         );
@@ -111,17 +119,6 @@ class Form extends Generic
             ]
         );
 
-        $fieldset->addField(
-            self::FORCE_PURGE_FORM_PARAM,
-            'checkbox',
-            [
-                'name' => self::FORCE_PURGE_FORM_PARAM,
-                'label' => __('Force purge'),
-                'title' => __('Force purge'),
-                'required' => false,
-            ]
-        );
-
         $form->setUseContainer(true);
         $this->setForm($form);
 
@@ -133,6 +130,6 @@ class Form extends Generic
      */
     private function getFormTargerUrl()
     {
-        return $this->_urlBuilder->getUrl('lizardmediavarnish/purgesingle/run');
+        return $this->_urlBuilder->getUrl('lizardmediavarnish/purgemultiple/run');
     }
 }

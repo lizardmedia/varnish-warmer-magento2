@@ -31,6 +31,10 @@ class PurgeAllCommand extends AbstractPurgeCommand
                 self::VERIFY_PEER_PARAM,
                 null,
                 InputOption::VALUE_OPTIONAL
+            )->addOption(
+                self::STORE_VIEW_ID,
+                null,
+                InputOption::VALUE_OPTIONAL
             );
     }
 
@@ -42,6 +46,7 @@ class PurgeAllCommand extends AbstractPurgeCommand
         if ($this->shouldSkipVerifyPeer($input)) {
             $this->cacheCleaner->verifyPeer = false;
         }
+        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
         $this->cacheCleaner->purgeAll();
     }
 }

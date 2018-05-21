@@ -1,23 +1,25 @@
 <?php
+declare(strict_types=1);
+
 /**
- * File: Form.php
+ * File:Form.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
  * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
  */
 
-namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeSingle;
+namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Page;
 use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Class Form
- * @package LizardMedia\VarnishWarmer\Controller\Adminhtml\Form
+ * @package LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple
  */
 class Form extends Action
 {
@@ -44,7 +46,7 @@ class Form extends Action
     public function execute()
     {
         $resultPage = $this->initAction();
-        $resultPage->getConfig()->getTitle()->prepend(__('Varnish: purge single URL'));
+        $resultPage->getConfig()->getTitle()->prepend(__('Varnish: purge group of URLs'));
         return $resultPage;
     }
 
@@ -55,7 +57,7 @@ class Form extends Action
     {
         /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();
-        $resultPage->setActiveMenu('LizardMedia_VarnishWarmer::form_purge_single');
+        $resultPage->setActiveMenu('LizardMedia_VarnishWarmer::form_purge_multiple');
         return $resultPage;
     }
 }

@@ -29,6 +29,10 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
             ->setDescription(
                 'Get all active, enabled and visible products, clear and regenerate varnish cache by URL'
             )->addOption(
+                self::VERIFY_PEER_PARAM,
+                null,
+                InputOption::VALUE_OPTIONAL
+            )->addOption(
                 self::STORE_VIEW_ID,
                 null,
                 InputOption::VALUE_OPTIONAL

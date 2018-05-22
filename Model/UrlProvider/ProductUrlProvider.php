@@ -86,22 +86,25 @@ class ProductUrlProvider implements ProductUrlProviderInterface
         $conn = $connection->getConnection();
 
         $productIds = $this->getAvailableProductsIds();
+        $rewrites = [];
+        if (!empty($productIds)) {
+            $select = $conn
+                ->select()
+                ->from(
+                    [
+                        'u' => 'url_rewrite'
+                    ],
+                    'request_path'
+                )->where(
+                    'u.entity_type=?',
+                    'product'
+                )->where(
+                    'u.entity_id IN (' . implode(',', $productIds) . ')'
+                );
 
-        $select = $conn
-            ->select()
-            ->from(
-                [
-                    'u' => 'url_rewrite'
-                ],
-                'request_path'
-            )->where(
-                'u.entity_type=?',
-                'product'
-            )->where(
-                'u.entity_id IN (' . implode(',', $productIds) . ')'
-            );
-
-        return $conn->fetchAll($select);
+            $rewrites = $conn->fetchAll($select);
+        }
+        return $rewrites;
     }
 
     /**

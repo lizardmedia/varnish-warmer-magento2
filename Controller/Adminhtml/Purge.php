@@ -16,6 +16,9 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Message\ManagerInterface;
+use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form;
+use Magento\Framework\Message\Factory;
+use Magento\Framework\Message\MessageInterface;
 
 /**
  * Class Purge
@@ -49,12 +52,18 @@ abstract class Purge extends Action
     protected $queueProgressBarRenderer;
 
     /**
+     * @var Factory
+     */
+    private $messageFactory;
+
+    /**
      * PurgeAll constructor.
      * @param Context $context
      * @param DirectoryList $directoryList
      * @param CacheCleaner $cacheCleaner
      * @param QueueProgressLoggerInterface $queueProgressLogger
      * @param ProgressBarRendererInterface $queueProgressBarRenderer
+     * @param Factory $messageFactory
      * @param array $data
      */
     public function __construct(
@@ -63,6 +72,7 @@ abstract class Purge extends Action
         CacheCleaner $cacheCleaner,
         QueueProgressLoggerInterface $queueProgressLogger,
         ProgressBarRendererInterface $queueProgressBarRenderer,
+        Factory $messageFactory,
         array $data = []
     ) {
         parent::__construct($context);
@@ -71,6 +81,7 @@ abstract class Purge extends Action
         $this->cacheCleaner = $cacheCleaner;
         $this->queueProgressLogger = $queueProgressLogger;
         $this->queueProgressBarRenderer = $queueProgressBarRenderer;
+        $this->messageFactory = $messageFactory;
     }
 
     /**
@@ -101,8 +112,9 @@ abstract class Purge extends Action
      */
     protected function addProcessLockWarning()
     {
-        $this->messageManager
-            ->addWarningMessage(
+        $this->messageManager->addMessage(
+            $this->messageFactory->create(
+                MessageInterface::TYPE_WARNING,
                 sprintf(
                     __(
                         'LizardMedia: cache is already being purged in background '
@@ -112,7 +124,8 @@ abstract class Purge extends Action
                     $this->cacheCleaner->getLockMessage(),
                     $this->queueProgressBarRenderer->getProgressHtml($this->queueProgressLogger->getProgressData())
                 )
-            );
+            )
+        );
     }
 
     /**
@@ -140,6 +153,10 @@ abstract class Purge extends Action
      */
     protected function getAdditionalParams(): string
     {
-        return '';
+        $additionalParams = '';
+        if ($this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM)) {
+            $additionalParams .= ' --store=' . $this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM);
+        }
+        return $additionalParams;
     }
 }

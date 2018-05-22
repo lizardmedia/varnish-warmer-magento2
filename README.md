@@ -72,6 +72,12 @@ The commands can be run using Magento built-in CLI:
 * ``lm-varnish:cache-purge-products`` - purges and regenerates products 
 * ``lm-varnish:cache-refresh-url`` - purges and regenerates single URL given as argument
 
+## Command options ##
+* store - sets store view ID to get a correct base URL, e.g.
+```
+php bin/magento lm-varnish:cache-refresh-url "*" --store=1
+```
+
 ## For developers
 
 The number of threads used for purging and regenerating Varnish cache can be customized

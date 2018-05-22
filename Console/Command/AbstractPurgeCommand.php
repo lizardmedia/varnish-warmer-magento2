@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 class AbstractPurgeCommand extends Command
 {
     const VERIFY_PEER_PARAM = 'verify_peer';
+    const STORE_VIEW_ID = 'store';
 
     /**
      * @var CacheCleaner

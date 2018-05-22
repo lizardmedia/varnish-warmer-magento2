@@ -26,12 +26,16 @@ class PurgeWildcardWithoutRegenerationCommand extends AbstractPurgeCommand
     protected function configure()
     {
         $this->setName(self::CLI_COMMAND)
-             ->setDescription('Purge: *; Regenerate: none; Skip process lock check')
-             ->addOption(
-                 self::VERIFY_PEER_PARAM,
-                 null,
-                 InputOption::VALUE_OPTIONAL
-             );
+            ->setDescription('Purge: *; Regenerate: none; Skip process lock check')
+            ->addOption(
+                self::VERIFY_PEER_PARAM,
+                null,
+                InputOption::VALUE_OPTIONAL
+            )->addOption(
+                self::STORE_VIEW_ID,
+                null,
+                InputOption::VALUE_OPTIONAL
+            );
     }
 
     /**
@@ -42,6 +46,7 @@ class PurgeWildcardWithoutRegenerationCommand extends AbstractPurgeCommand
         if ($this->shouldSkipVerifyPeer($input)) {
             $this->cacheCleaner->verifyPeer = false;
         }
+        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
         $this->cacheCleaner->purgeWildcardWithoutRegen();
     }
 }

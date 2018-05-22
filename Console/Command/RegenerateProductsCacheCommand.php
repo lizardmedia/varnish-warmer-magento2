@@ -10,6 +10,7 @@ namespace LizardMedia\VarnishWarmer\Console\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class RegenerateProductsCacheCommand
@@ -27,6 +28,10 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
         $this->setName(self::CLI_COMMAND)
             ->setDescription(
                 'Get all active, enabled and visible products, clear and regenerate varnish cache by URL'
+            )->addOption(
+                self::STORE_VIEW_ID,
+                null,
+                InputOption::VALUE_OPTIONAL
             );
     }
 
@@ -38,6 +43,7 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
         if ($this->shouldSkipVerifyPeer($input)) {
             $this->cacheCleaner->verifyPeer = false;
         }
+        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
         $this->cacheCleaner->purgeAndRegenerateProducts();
     }
 }

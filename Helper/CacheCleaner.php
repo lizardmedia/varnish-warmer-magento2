@@ -1,4 +1,10 @@
 <?php
+/**
+ * File: CacheCleaner.php
+ *
+ * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+ * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ */
 
 namespace LizardMedia\VarnishWarmer\Helper;
 
@@ -14,7 +20,8 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 
 /**
- * Varnish Cache Cleaner helper
+ * Class CacheCleaner
+ * @package LizardMedia\VarnishWarmer\Helper
  */
 class CacheCleaner
 {
@@ -54,6 +61,11 @@ class CacheCleaner
     protected $baseUrl;
 
     /**
+     * @var int
+     */
+    protected $storeViewId;
+
+    /**
      * @var bool
      */
     public $verifyPeer = true;
@@ -84,8 +96,14 @@ class CacheCleaner
         $this->varnishUrlRegenerator = $varnishUrlRegeneratorFactory->create();
         /** @var VarnishUrlPurgerInterface varnishUrlPurger */
         $this->varnishUrlPurger = $varnishUrlPurgerFactory->create();
+    }
 
-        $this->setBaseUrl();
+    /**
+     * @param int $storeViewId
+     */
+    public function setStoreViewId(int $storeViewId)
+    {
+        $this->storeViewId = $storeViewId;
     }
 
     /**
@@ -232,7 +250,7 @@ class CacheCleaner
      */
     private function addUrlToPurge($relativeUrl, $autoRegenerate = false): void
     {
-        $url = $this->baseUrl . $relativeUrl;
+        $url = $this->getBaseUrl() . $relativeUrl;
         $this->varnishUrlPurger->addUrlToPurge($url);
         if ($autoRegenerate) {
             $this->addUrlToRegenerate($relativeUrl);
@@ -245,7 +263,7 @@ class CacheCleaner
      */
     private function addUrlToRegenerate($relativeUrl): void
     {
-        $url = $this->baseUrl . $relativeUrl;
+        $url = $this->getBaseUrl() . $relativeUrl;
         $this->varnishUrlRegenerator->addUrlToRegenerate($url);
     }
 
@@ -341,10 +359,22 @@ class CacheCleaner
     {
         $this->baseUrl = $this->scopeConfig->getValue(
             Store::XML_PATH_UNSECURE_BASE_URL,
-            ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE,
+            $this->storeViewId
         );
         if (substr($this->baseUrl, -1) != "/") {
             $this->baseUrl .= "/";
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function getBaseUrl()
+    {
+        if (!$this->baseUrl) {
+            $this->setBaseUrl();
+        }
+        return $this->baseUrl;
     }
 }

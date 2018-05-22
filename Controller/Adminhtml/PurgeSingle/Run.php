@@ -25,7 +25,7 @@ class Run extends Purge
      */
     public function execute()
     {
-        if (!$this->isLocked()) {
+        if ($this->isForcePurge() || !$this->isLocked()) {
             $this->runCommand();
             $this->addProcessNotification();
         } else {
@@ -52,5 +52,13 @@ class Run extends Purge
         $additionalParams = " \"{$url}\"";
         $additionalParams .= parent::getAdditionalParams();
         return $additionalParams;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isForcePurge(): bool
+    {
+        return $this->getRequest()->getParam(Form::FORCE_PURGE_FORM_PARAM) !== null;
     }
 }

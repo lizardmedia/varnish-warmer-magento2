@@ -1,5 +1,5 @@
 {
-    "name": "lizardmedia/varnish-warmer-magento2",
+    "name": "lizardmedia/module-varnish-warmer",
     "description": "Varnish Cache Warmer Magento2 module by Lizard Media",
     "require": {
         "php": "~7.1.0",
@@ -7,7 +7,7 @@
         "magento/framework": "101.0.*"
     },
     "type": "magento2-module",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": [
         "MIT"
     ],

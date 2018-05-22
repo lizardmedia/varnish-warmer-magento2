@@ -1,3 +1,7 @@
+[![Latest Stable Version](https://poser.pugx.org/lizardmedia/module-varnish-warmer/v/stable)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
+[![Total Downloads](https://poser.pugx.org/lizardmedia/module-varnish-warmer/downloads)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
+[![License](https://poser.pugx.org/lizardmedia/module-varnish-warmer/license)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
+
 # Magento2 Varnish Cache Warmer 
 
 Magento2 module for handling Varnish Cache cleaning and regenerating using admin panel
@@ -19,19 +23,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 ##### Using composer (suggested)
 
-Add the repository to your composer.json
-```
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/lizardmedia/varnish-warmer-magento2"
-    }
-]
-```
-and run
+Simply run
 
 ```
-composer require lizardmedia/varnish-warmer-magento2
+composer require lizardmedia/module-varnish-warmer
 ```
 
 ##### Downloading ZIP

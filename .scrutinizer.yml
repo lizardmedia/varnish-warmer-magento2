@@ -1,0 +1,39 @@
+checks:
+  php:
+    code_rating: true
+    duplication: true
+    excluded_dependencies:
+      - magento/framework
+      - magento/module-catalog-inventory
+      - magento/module-cron
+      - magento/module-integration
+      - magento/module-rss
+      - magento/module-theme
+      - magento/module-customer
+      - magento/module-gift-message
+      - magento/module-page-cache
+      - magento/module-sales-sequence
+      - magento/module-user
+      - magento/module-authorization
+      - magento/module-developer
+      - magento/module-grouped-product
+      - magento/module-quote
+      - magento/module-security
+      - magento/module-wishlist
+      - magento/module-catalog-import-export
+      - magento/module-directory
+      - magento/module-indexer
+      - magento/module-require-js
+      - magento/module-shipping
+      - magento/*
+      - magento
+      - magento/module-cms
+
+filter:
+    excluded_paths:
+        - "Test/"
+
+build:
+    dependencies:
+        before:
+            - 'echo "{\"http-basic\":{\"repo.magento.com\":{\"username\":\"${MAGENTO_USERNAME}\",\"password\":\"${MAGENTO_PASSWORD}\"}}}" > auth.json'

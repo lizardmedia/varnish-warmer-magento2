@@ -1,6 +1,8 @@
 [![Latest Stable Version](https://poser.pugx.org/lizardmedia/module-varnish-warmer/v/stable)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
 [![Total Downloads](https://poser.pugx.org/lizardmedia/module-varnish-warmer/downloads)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
 [![License](https://poser.pugx.org/lizardmedia/module-varnish-warmer/license)](https://packagist.org/packages/lizardmedia/module-varnish-warmer)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/lizardmedia/varnish-warmer-magento2/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/lizardmedia/password-migrator-magento2/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/lizardmedia/varnish-warmer-magento2/build.png?b=master)](https://scrutinizer-ci.com/g/lizardmedia/password-migrator-magento2/build-status/master)
 
 # Magento2 Varnish Cache Warmer 
 

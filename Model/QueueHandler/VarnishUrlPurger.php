@@ -77,6 +77,7 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
             ->set(CURLOPT_CUSTOMREQUEST, self::CURL_CUSTOMREQUEST)
             ->set(CURLOPT_VERBOSE, false)
             ->set(CURLOPT_SSL_VERIFYPEER, $this->isVerifyPeer())
+            ->set(CURLOPT_HTTPHEADER, ['X-Magento-Tags-Pattern: .*'])
             ->set(CURLOPT_RETURNTRANSFER, true);
 
         $requests = &$this->requests;

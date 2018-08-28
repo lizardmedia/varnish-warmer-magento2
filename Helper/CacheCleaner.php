@@ -8,6 +8,7 @@
 
 namespace LizardMedia\VarnishWarmer\Helper;
 
+use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\LockHandler\LockInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
@@ -56,9 +57,19 @@ class CacheCleaner
     protected $categoryUrlProvider;
 
     /**
+     * @var PurgingConfigProviderInterface
+     */
+    protected $purgingConfigProvider;
+
+    /**
      * @var string
      */
-    protected $baseUrl;
+    protected $purgeBaseUrl;
+
+    /**
+     * @var string
+     */
+    protected $regenBaseUrl;
 
     /**
      * @var int
@@ -85,12 +96,14 @@ class CacheCleaner
         LockInterface $lockHandler,
         ScopeConfigInterface $scopeConfig,
         ProductUrlProviderInterface $productUrlProvider,
-        CategoryUrlProviderInterface $categoryUrlProvider
+        CategoryUrlProviderInterface $categoryUrlProvider,
+        PurgingConfigProviderInterface $purgingConfigProvider
     ) {
         $this->lockHandler = $lockHandler;
         $this->scopeConfig = $scopeConfig;
         $this->productUrlProvider = $productUrlProvider;
         $this->categoryUrlProvider = $categoryUrlProvider;
+        $this->purgingConfigProvider = $purgingConfigProvider;
 
         /** @var VarnishUrlRegeneratorInterface varnishUrlRegenerator */
         $this->varnishUrlRegenerator = $varnishUrlRegeneratorFactory->create();
@@ -250,7 +263,7 @@ class CacheCleaner
      */
     private function addUrlToPurge($relativeUrl, $autoRegenerate = false): void
     {
-        $url = $this->getBaseUrl() . $relativeUrl;
+        $url = $this->getPurgeBaseUrl() . $relativeUrl;
         $this->varnishUrlPurger->addUrlToPurge($url);
         if ($autoRegenerate) {
             $this->addUrlToRegenerate($relativeUrl);
@@ -263,7 +276,7 @@ class CacheCleaner
      */
     private function addUrlToRegenerate($relativeUrl): void
     {
-        $url = $this->getBaseUrl() . $relativeUrl;
+        $url = $this->getRegenBaseUrl() . $relativeUrl;
         $this->varnishUrlRegenerator->addUrlToRegenerate($url);
     }
 
@@ -355,26 +368,58 @@ class CacheCleaner
     /**
      * @return void
      */
-    private function setBaseUrl(): void
+    private function setPurgeBaseUrl(): void
     {
-        $this->baseUrl = $this->scopeConfig->getValue(
+        if ($this->purgingConfigProvider->isPurgeCustomHostEnabled()) {
+            $this->purgeBaseUrl = $this->purgingConfigProvider->getCustomPurgeHost();
+        } else {
+            $this->purgeBaseUrl = $this->scopeConfig->getValue(
+                Store::XML_PATH_UNSECURE_BASE_URL,
+                ScopeInterface::SCOPE_STORE,
+                $this->storeViewId
+            );
+        }
+
+        if (substr($this->purgeBaseUrl, -1) != "/") {
+            $this->purgeBaseUrl .= "/";
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function setRegenBaseUrl(): void
+    {
+        $this->regenBaseUrl = $this->scopeConfig->getValue(
             Store::XML_PATH_UNSECURE_BASE_URL,
             ScopeInterface::SCOPE_STORE,
             $this->storeViewId
         );
-        if (substr($this->baseUrl, -1) != "/") {
-            $this->baseUrl .= "/";
+
+        if (substr($this->regenBaseUrl, -1) != "/") {
+            $this->regenBaseUrl .= "/";
         }
     }
 
     /**
      * @return string
      */
-    private function getBaseUrl()
+    private function getPurgeBaseUrl()
     {
-        if (!$this->baseUrl) {
-            $this->setBaseUrl();
+        if (!$this->purgeBaseUrl) {
+            $this->setPurgeBaseUrl();
         }
-        return $this->baseUrl;
+        return $this->purgeBaseUrl;
+    }
+
+    /**
+     * @return string
+     */
+    private function getRegenBaseUrl()
+    {
+        if (!$this->regenBaseUrl) {
+            $this->setRegenBaseUrl();
+        }
+        return $this->regenBaseUrl;
     }
 }

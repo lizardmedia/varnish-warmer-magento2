@@ -18,3 +18,7 @@
 "Run process","Run process"
 "Relative URL, e.g. * or categoryname. If empty, homepage will be purged","Relative URL, e.g. * or categoryname. If empty, homepage will be purged"
 "Varnish: purge group of URLs","Varnish: purge group of URLs"
+"Purging","Purging"
+"Use custom host for purging","Use custom host for purging"
+"Custom host","Custom host"
+"Additional host address for purge request header","Additional host address for purge request header"

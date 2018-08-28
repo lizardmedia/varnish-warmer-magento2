@@ -17,8 +17,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
  */
 class GeneralConfigProvider implements GeneralConfigProviderInterface
 {
-    const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish_cache/general/max_concurrent_regeneration';
-    const XML_PATH_CONCURRENT_PURGE = 'lm_varnish_cache/general/max_concurrent_purge';
+    const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish/general/max_concurrent_regeneration';
+    const XML_PATH_CONCURRENT_PURGE = 'lm_varnish/general/max_concurrent_purge';
 
     const REGENERATION_PROCESSES_DEFAULT = 10;
     const REGENERATION_PROCESSES_MAX = 20;

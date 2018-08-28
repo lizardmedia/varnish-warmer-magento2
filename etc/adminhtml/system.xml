@@ -21,6 +21,25 @@
                     <label>Number of concurrent purge processes</label>
                 </field>
             </group>
+            <group id="purge" showInDefault="1" translate="label">
+                <label>Purging</label>
+                <field id="different_purge_host" type="select" showInDefault="1" translate="label">
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <label>Use custom host for purging</label>
+                </field>
+                <field id="custom_host" type="text" showInDefault="1" translate="label">
+                    <label>Custom host</label>
+                    <depends>
+                        <field id="lm_varnish/purge/different_purge_host">1</field>
+                    </depends>
+                </field>
+                <field id="header_host" type="text" showInDefault="1" translate="label">
+                    <label>Additional host address for purge request header</label>
+                    <depends>
+                        <field id="lm_varnish/purge/different_purge_host">1</field>
+                    </depends>
+                </field>
+            </group>
         </section>
     </system>
 </config>

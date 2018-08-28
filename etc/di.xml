@@ -38,8 +38,8 @@
     <preference for="LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface"
                 type="LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider" />
 
-    <preference for="LizardMedia\VarnishWarmer\Api\Config\PurgeWithoutRegenNotificationMailerConfigProviderInterface"
-                type="LizardMedia\VarnishWarmer\Model\Config\PurgeWithoutRegenNotificationMailerConfigProvider" />
+    <preference for="LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface"
+                type="LizardMedia\VarnishWarmer\Model\Config\PurgingConfigProvider" />
 
     <preference for="LizardMedia\VarnishWarmer\Api\LockHandler\LockInterface"
                 type="LizardMedia\VarnishWarmer\Model\LockHandler\FileLock" />

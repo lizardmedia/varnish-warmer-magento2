@@ -9,6 +9,8 @@
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
+use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
+use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface;
 use cURL\Event;
 use cURL\Request;
@@ -29,6 +31,28 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
      * @var bool
      */
     private $verifyPeer = true;
+
+    /**
+     * @var PurgingConfigProviderInterface
+     */
+    private $purgingConfigProvider;
+
+    /**
+     * VarnishUrlPurger constructor.
+     * @param GeneralConfigProviderInterface $configProvider
+     * @param LoggerInterface $logger
+     * @param QueueProgressLoggerInterface $queueProgressLogger
+     * @param PurgingConfigProviderInterface $purgingConfigProvider
+     */
+    public function __construct(
+        GeneralConfigProviderInterface $configProvider,
+        LoggerInterface $logger,
+        QueueProgressLoggerInterface $queueProgressLogger,
+        PurgingConfigProviderInterface $purgingConfigProvider
+    ) {
+        parent::__construct($configProvider, $logger, $queueProgressLogger);
+        $this->purgingConfigProvider = $purgingConfigProvider;
+    }
 
     /**
      * @return bool
@@ -77,7 +101,7 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
             ->set(CURLOPT_CUSTOMREQUEST, self::CURL_CUSTOMREQUEST)
             ->set(CURLOPT_VERBOSE, false)
             ->set(CURLOPT_SSL_VERIFYPEER, $this->isVerifyPeer())
-            ->set(CURLOPT_HTTPHEADER, ['X-Magento-Tags-Pattern: .*'])
+            ->set(CURLOPT_HTTPHEADER, $this->buildHeaders())
             ->set(CURLOPT_RETURNTRANSFER, true);
 
         $requests = &$this->requests;
@@ -120,5 +144,19 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
     protected function getQueueProcessType(): string
     {
         return self::PROCESS_TYPE;
+    }
+
+    /**
+     * @return array
+     */
+    private function buildHeaders(): array
+    {
+        $headers = [];
+        $headers[] = 'X-Magento-Tags-Pattern: .*';
+        if ($this->purgingConfigProvider->isPurgeCustomHostEnabled()
+            && $this->purgingConfigProvider->getAdditionalHostForHeader()) {
+            $headers[] = "Host: {$this->purgingConfigProvider->getAdditionalHostForHeader()}";
+        }
+        return $headers;
     }
 }

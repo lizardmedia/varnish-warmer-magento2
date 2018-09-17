@@ -22,3 +22,4 @@
 "Use custom host for purging","Use custom host for purging"
 "Custom host","Custom host"
 "Additional host address for purge request header","Additional host address for purge request header"
+"If you need to purge multiple URLs (multiple Varnish servers) split the urls with a comma","If you need to purge multiple URLs (multiple Varnish servers) split the urls with a comma"

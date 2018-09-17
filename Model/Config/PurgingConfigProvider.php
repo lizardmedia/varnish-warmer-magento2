@@ -21,6 +21,8 @@ class PurgingConfigProvider implements PurgingConfigProviderInterface
     const XML_PATH_CUSTOM_HOST = 'lm_varnish/purge/custom_host';
     const XML_PATH_CUSTOM_HEADER_HOST = 'lm_varnish/purge/header_host';
 
+    const PURGE_HOSTS_DELIMITER = ',';
+
     /**
      * @var ScopeConfigInterface
      */
@@ -44,11 +46,13 @@ class PurgingConfigProvider implements PurgingConfigProviderInterface
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getCustomPurgeHost(): string
+    public function getCustomPurgeHosts(): array
     {
-        return (string)$this->scopeConfig->getValue(self::XML_PATH_CUSTOM_HOST);
+        $hostsFieldValue = (string)$this->scopeConfig->getValue(self::XML_PATH_CUSTOM_HOST);
+        return explode(self::PURGE_HOSTS_DELIMITER, $hostsFieldValue);
+
     }
 
     /**

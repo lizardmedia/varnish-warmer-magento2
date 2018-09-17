@@ -102,5 +102,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## To do
 
-* Add running CLI commands in background
 * Remove CacheCleaner helper

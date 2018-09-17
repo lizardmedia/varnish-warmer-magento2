@@ -27,8 +27,9 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <label>Use custom host for purging</label>
                 </field>
-                <field id="custom_host" type="text" showInDefault="1" translate="label">
+                <field id="custom_host" type="text" showInDefault="1" translate="label comment">
                     <label>Custom host</label>
+                    <comment>If you need to purge multiple URLs (multiple Varnish servers) split the urls with a comma</comment>
                     <depends>
                         <field id="lm_varnish/purge/different_purge_host">1</field>
                     </depends>

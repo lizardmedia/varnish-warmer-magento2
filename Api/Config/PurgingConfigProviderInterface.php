@@ -20,9 +20,9 @@ interface PurgingConfigProviderInterface
     public function isPurgeCustomHostEnabled(): bool;
 
     /**
-     * @return string
+     * @return array
      */
-    public function getCustomPurgeHost(): string;
+    public function getCustomPurgeHosts(): array;
 
     /**
      * @return string

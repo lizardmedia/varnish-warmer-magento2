@@ -20,6 +20,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 
+//TODO remove this entire class and change it to a service contract
 /**
  * Class CacheCleaner
  * @package LizardMedia\VarnishWarmer\Helper
@@ -62,9 +63,9 @@ class CacheCleaner
     protected $purgingConfigProvider;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $purgeBaseUrl;
+    protected $purgeBaseUrls;
 
     /**
      * @var string
@@ -263,10 +264,12 @@ class CacheCleaner
      */
     private function addUrlToPurge($relativeUrl, $autoRegenerate = false): void
     {
-        $url = $this->getPurgeBaseUrl() . $relativeUrl;
-        $this->varnishUrlPurger->addUrlToPurge($url);
-        if ($autoRegenerate) {
-            $this->addUrlToRegenerate($relativeUrl);
+        foreach ($this->getPurgeBaseUrls() as $purgeBaseUrl) {
+            $url = $purgeBaseUrl . $relativeUrl;
+            $this->varnishUrlPurger->addUrlToPurge($url);
+            if ($autoRegenerate) {
+                $this->addUrlToRegenerate($relativeUrl);
+            }
         }
     }
 
@@ -368,20 +371,23 @@ class CacheCleaner
     /**
      * @return void
      */
-    private function setPurgeBaseUrl(): void
+    private function setPurgeBaseUrls(): void
     {
         if ($this->purgingConfigProvider->isPurgeCustomHostEnabled()) {
-            $this->purgeBaseUrl = $this->purgingConfigProvider->getCustomPurgeHost();
+            $this->purgeBaseUrls = $this->purgingConfigProvider->getCustomPurgeHosts();
         } else {
-            $this->purgeBaseUrl = $this->scopeConfig->getValue(
+            $baseUrl = $this->scopeConfig->getValue(
                 Store::XML_PATH_UNSECURE_BASE_URL,
                 ScopeInterface::SCOPE_STORE,
                 $this->storeViewId
             );
+            $this->purgeBaseUrls = [$baseUrl];
         }
 
-        if (substr($this->purgeBaseUrl, -1) != "/") {
-            $this->purgeBaseUrl .= "/";
+        foreach ($this->purgeBaseUrls as &$purgeBaseUrl) {
+            if (substr($purgeBaseUrl, -1) != "/") {
+                $purgeBaseUrl .= "/";
+            }
         }
     }
 
@@ -402,14 +408,14 @@ class CacheCleaner
     }
 
     /**
-     * @return string
+     * @return array
      */
-    private function getPurgeBaseUrl()
+    private function getPurgeBaseUrls()
     {
-        if (!$this->purgeBaseUrl) {
-            $this->setPurgeBaseUrl();
+        if (!$this->purgeBaseUrls) {
+            $this->setPurgeBaseUrls();
         }
-        return $this->purgeBaseUrl;
+        return $this->purgeBaseUrls;
     }
 
     /**

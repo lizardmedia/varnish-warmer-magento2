@@ -2,7 +2,7 @@
     "name": "lizardmedia/module-varnish-warmer",
     "description": "Varnish Cache Warmer Magento2 module by Lizard Media",
     "require": {
-        "php": "~7.1.0",
+        "php": "~7.1.0 || ~7.2.0",
         "stil/curl-easy": "^1.1",
         "magento/framework": "101.0.*"
     },

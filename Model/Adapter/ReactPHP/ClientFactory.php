@@ -4,8 +4,8 @@ declare(strict_types=1);
 /**
  * File: ClientFactory.php
  *
- * @author      Maciej Sławik <maciekslawik@gmail.com>
- * Github:      https://github.com/maciejslawik
+ * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP;

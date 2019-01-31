@@ -11,7 +11,6 @@ namespace LizardMedia\VarnishWarmer\Console\Command;
 use Symfony\Component\Console\Command\Command;
 use LizardMedia\VarnishWarmer\Helper\CacheCleaner;
 use Magento\Framework\App\State;
-use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Class AbstractPurgeCommand
@@ -19,7 +18,9 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 class AbstractPurgeCommand extends Command
 {
-    const VERIFY_PEER_PARAM = 'verify_peer';
+    /**
+     * @var string
+     */
     const STORE_VIEW_ID = 'store';
 
     /**
@@ -40,14 +41,5 @@ class AbstractPurgeCommand extends Command
     ) {
         $this->cacheCleaner = $cacheCleaner;
         parent::__construct($name);
-    }
-
-    /**
-     * @param InputInterface $input
-     * @return bool
-     */
-    protected function shouldSkipVerifyPeer(InputInterface $input): bool
-    {
-        return $input->getOption(self::VERIFY_PEER_PARAM) === 'false';
     }
 }

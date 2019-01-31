@@ -18,6 +18,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class PurgeGeneralCommand extends AbstractPurgeCommand
 {
+    /**
+     * @var string
+     */
     const CLI_COMMAND = 'lm-varnish:cache-purge-general';
 
     /**
@@ -28,10 +31,6 @@ class PurgeGeneralCommand extends AbstractPurgeCommand
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Purge: homepage, categories; Regenerate: homepage, categories')
             ->addOption(
-                self::VERIFY_PEER_PARAM,
-                null,
-                InputOption::VALUE_OPTIONAL
-            )->addOption(
                 self::STORE_VIEW_ID,
                 null,
                 InputOption::VALUE_OPTIONAL
@@ -43,10 +42,7 @@ class PurgeGeneralCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($this->shouldSkipVerifyPeer($input)) {
-            $this->cacheCleaner->verifyPeer = false;
-        }
-        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
+        $this->cacheCleaner->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
         $this->cacheCleaner->purgeGeneral();
     }
 }

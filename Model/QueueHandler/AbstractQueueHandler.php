@@ -8,10 +8,12 @@
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
-use cURL\RequestsQueue;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
+use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory;
 use Psr\Log\LoggerInterface;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Factory;
 
 /**
  * Class AbstractQueueHandler
@@ -19,17 +21,10 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractQueueHandler
 {
-    const CURL_TIMEOUT = 30;
-
     /**
      * @var GeneralConfigProviderInterface
      */
     protected $configProvider;
-
-    /**
-     * @var RequestsQueue
-     */
-    protected $queue;
 
     /**
      * @var LoggerInterface
@@ -40,6 +35,11 @@ abstract class AbstractQueueHandler
      * @var QueueProgressLoggerInterface
      */
     protected $queueProgressLogger;
+
+    /**
+     * @var LoopInterface
+     */
+    protected $loop;
 
     /**
      * @var int
@@ -54,23 +54,33 @@ abstract class AbstractQueueHandler
     /**
      * @var array
      */
-    protected $requests = [];
+    protected $urls = [];
 
     /**
-     * VarnishUrlRegenerator constructor.
+     * @var ClientFactory
+     */
+    protected $clientFactory;
+
+    /**
+     * AbstractQueueHandler constructor.
      * @param GeneralConfigProviderInterface $configProvider
      * @param LoggerInterface $logger
      * @param QueueProgressLoggerInterface $queueProgressLogger
+     * @param Factory $loopFactory
+     * @param ClientFactory $clientFactory
      */
     public function __construct(
         GeneralConfigProviderInterface $configProvider,
         LoggerInterface $logger,
-        QueueProgressLoggerInterface $queueProgressLogger
+        QueueProgressLoggerInterface $queueProgressLogger,
+        Factory $loopFactory,
+        ClientFactory $clientFactory
     ) {
-        $this->queue = new RequestsQueue();
         $this->configProvider = $configProvider;
         $this->logger = $logger;
         $this->queueProgressLogger = $queueProgressLogger;
+        $this->loop = $loopFactory::create();
+        $this->clientFactory = $clientFactory;
     }
 
     /**
@@ -97,7 +107,7 @@ abstract class AbstractQueueHandler
      */
     protected function getNumberOfParallelProcesses(): int
     {
-        return min($this->getMaxNumberOfProcesses(), count($this->requests));
+        return min($this->getMaxNumberOfProcesses(), count($this->urls));
     }
 
     /**

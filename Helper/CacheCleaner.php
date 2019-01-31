@@ -78,11 +78,6 @@ class CacheCleaner
     protected $storeViewId;
 
     /**
-     * @var bool
-     */
-    public $verifyPeer = true;
-
-    /**
      * CacheCleaner constructor.
      * @param VarnishUrlRegeneratorFactory $varnishUrlRegeneratorFactory
      * @param VarnishUrlPurgerFactory $varnishUrlPurgerFactory
@@ -132,7 +127,6 @@ class CacheCleaner
         $this->addUrlToRegenerate('');
         $this->regenerateCategories();
         $this->processProductsRegenerate();
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
         $this->unlock();
@@ -146,7 +140,6 @@ class CacheCleaner
     public function purgeWildcardWithoutRegen(): void
     {
         $this->addUrlToPurge('*');
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
     }
 
@@ -162,7 +155,6 @@ class CacheCleaner
         $this->addUrlToRegenerate('');
         $this->processCategoriesPurgeAndRegenerate();
         $this->processProductsPurgeAndRegenerate();
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
         $this->unlock();
@@ -179,7 +171,6 @@ class CacheCleaner
         $this->addUrlToPurge('');
         $this->addUrlToRegenerate('');
         $this->processCategoriesPurgeAndRegenerate();
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
         $this->unlock();
@@ -195,7 +186,6 @@ class CacheCleaner
         $this->lock();
         $this->addUrlToPurge('');
         $this->addUrlToRegenerate('');
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
         $this->unlock();
@@ -209,7 +199,6 @@ class CacheCleaner
     {
         $this->addUrlToPurge($url);
         $this->addUrlToRegenerate($url);
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
     }
@@ -235,7 +224,6 @@ class CacheCleaner
     {
         $this->lock();
         $this->processProductsPurgeAndRegenerate();
-        $this->varnishUrlPurger->setVerifyPeer($this->verifyPeer);
         $this->varnishUrlPurger->runPurgeQueue();
         $this->varnishUrlRegenerator->runRegenerationQueue();
         $this->unlock();

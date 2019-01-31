@@ -24,15 +24,4 @@ interface VarnishUrlPurgerInterface
      * @return void
      */
     public function runPurgeQueue(): void;
-
-    /**
-     * @return bool
-     */
-    public function isVerifyPeer(): bool;
-
-    /**
-     * @param bool $verifyPeer
-     * @return void
-     */
-    public function setVerifyPeer(bool $verifyPeer): void;
 }

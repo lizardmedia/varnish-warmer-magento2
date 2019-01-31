@@ -19,8 +19,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class PurgeUrlCommand extends AbstractPurgeCommand
 {
+    /**
+     * @var string
+     */
     const CLI_COMMAND = 'lm-varnish:cache-refresh-url';
 
+    /**
+     * @var string
+     */
     const URL_ARGUMENT = 'url';
 
     /**
@@ -30,11 +36,6 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     {
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Clear varnish cache (make PURGE) and re-generate URL')
-            ->addOption(
-                self::VERIFY_PEER_PARAM,
-                null,
-                InputOption::VALUE_OPTIONAL
-            )
             ->addArgument(
                 self::URL_ARGUMENT,
                 InputArgument::REQUIRED,
@@ -52,10 +53,7 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $url = $input->getArgument(self::URL_ARGUMENT);
-        if ($this->shouldSkipVerifyPeer($input)) {
-            $this->cacheCleaner->verifyPeer = false;
-        }
-        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
+        $this->cacheCleaner->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
         $this->cacheCleaner->purgeAndRegenerateUrl($url);
     }
 }

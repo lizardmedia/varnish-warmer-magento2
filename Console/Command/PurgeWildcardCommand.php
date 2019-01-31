@@ -42,7 +42,7 @@ class PurgeWildcardCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->cacheCleaner->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->cacheCleaner->purgeWildcard();
+        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
+        $this->varnishPurger->purgeWildcard();
     }
 }

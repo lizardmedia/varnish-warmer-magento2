@@ -1,12 +1,14 @@
 <?php
+declare(strict_types=1);
+
 /**
- * File: CacheCleaner.php
+ * File:VarnishPurger.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
-namespace LizardMedia\VarnishWarmer\Helper;
+namespace LizardMedia\VarnishWarmer\Model;
 
 use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\LockHandler\LockInterface;
@@ -14,18 +16,19 @@ use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
 use LizardMedia\VarnishWarmer\Api\UrlProvider\CategoryUrlProviderInterface;
 use LizardMedia\VarnishWarmer\Api\UrlProvider\ProductUrlProviderInterface;
+use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
 use LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegeneratorFactory;
 use LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlPurgerFactory;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 
-//TODO remove this entire class and change it to a service contract
 /**
- * Class CacheCleaner
- * @package LizardMedia\VarnishWarmer\Helper
+ * Class VarnishPurger
+ * @package LizardMedia\VarnishWarmer\Model
  */
-class CacheCleaner
+class VarnishPurger implements VarnishPurgerInterface
 {
     /**
      * @var VarnishUrlRegeneratorInterface
@@ -78,13 +81,14 @@ class CacheCleaner
     protected $storeViewId;
 
     /**
-     * CacheCleaner constructor.
+     * VarnishPurger constructor.
      * @param VarnishUrlRegeneratorFactory $varnishUrlRegeneratorFactory
      * @param VarnishUrlPurgerFactory $varnishUrlPurgerFactory
      * @param LockInterface $lockHandler
      * @param ScopeConfigInterface $scopeConfig
      * @param ProductUrlProviderInterface $productUrlProvider
      * @param CategoryUrlProviderInterface $categoryUrlProvider
+     * @param PurgingConfigProviderInterface $purgingConfigProvider
      */
     public function __construct(
         VarnishUrlRegeneratorFactory $varnishUrlRegeneratorFactory,
@@ -105,14 +109,6 @@ class CacheCleaner
         $this->varnishUrlRegenerator = $varnishUrlRegeneratorFactory->create();
         /** @var VarnishUrlPurgerInterface varnishUrlPurger */
         $this->varnishUrlPurger = $varnishUrlPurgerFactory->create();
-    }
-
-    /**
-     * @param int $storeViewId
-     */
-    public function setStoreViewId(int $storeViewId)
-    {
-        $this->storeViewId = $storeViewId;
     }
 
     /**
@@ -192,6 +188,18 @@ class CacheCleaner
     }
 
     /**
+     * @return void
+     */
+    public function purgeAndRegenerateProducts(): void
+    {
+        $this->lock();
+        $this->processProductsPurgeAndRegenerate();
+        $this->varnishUrlPurger->runPurgeQueue();
+        $this->varnishUrlRegenerator->runRegenerationQueue();
+        $this->unlock();
+    }
+
+    /**
      * @param string $url
      * @return void
      */
@@ -204,12 +212,12 @@ class CacheCleaner
     }
 
     /**
-     * @param $product
+     * @param ProductInterface $product
      * @return void
      */
-    public function purgeProduct($product): void
+    public function purgeProduct(ProductInterface $product): void
     {
-        $productUrls = $this->getProductUrls($product->getEntityId());
+        $productUrls = $this->getProductUrls($product->getId());
         foreach ($productUrls as $url) {
             $this->addUrlToPurge($url['request_path'], true);
         }
@@ -218,15 +226,11 @@ class CacheCleaner
     }
 
     /**
-     * @return void
+     * @param int $storeViewId
      */
-    public function purgeAndRegenerateProducts(): void
+    public function setStoreViewId(int $storeViewId)
     {
-        $this->lock();
-        $this->processProductsPurgeAndRegenerate();
-        $this->varnishUrlPurger->runPurgeQueue();
-        $this->varnishUrlRegenerator->runRegenerationQueue();
-        $this->unlock();
+        $this->storeViewId = $storeViewId;
     }
 
     /**

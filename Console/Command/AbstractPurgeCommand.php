@@ -8,8 +8,8 @@
 
 namespace LizardMedia\VarnishWarmer\Console\Command;
 
+use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
 use Symfony\Component\Console\Command\Command;
-use LizardMedia\VarnishWarmer\Helper\CacheCleaner;
 use Magento\Framework\App\State;
 
 /**
@@ -24,22 +24,22 @@ class AbstractPurgeCommand extends Command
     const STORE_VIEW_ID = 'store';
 
     /**
-     * @var CacheCleaner
+     * @var VarnishPurgerInterface
      */
-    protected $cacheCleaner;
+    protected $varnishPurger;
 
     /**
-     * PurgeAllCommand constructor.
+     * AbstractPurgeCommand constructor.
      * @param State $state
-     * @param CacheCleaner $cacheCleaner
+     * @param VarnishPurgerInterface $varnishPurger
      * @param null $name
      */
     public function __construct(
         State $state,
-        CacheCleaner $cacheCleaner,
+        VarnishPurgerInterface $varnishPurger,
         $name = null
     ) {
-        $this->cacheCleaner = $cacheCleaner;
+        $this->varnishPurger = $varnishPurger;
         parent::__construct($name);
     }
 }

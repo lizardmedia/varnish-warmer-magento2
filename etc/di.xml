@@ -58,6 +58,9 @@
 
     <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface"
                 type="LizardMedia\VarnishWarmer\Model\ProgressHandler\ProgressBarRenderer" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface"
+                type="LizardMedia\VarnishWarmer\Model\VarnishPurger" />
     <!--End of preference section-->
 
     <!--Constructor argument injection section-->

@@ -100,6 +100,3 @@ See also the list of [contributors](https://github.com/lizardmedia/varnish-warme
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## To do
-
-* Remove CacheCleaner helper

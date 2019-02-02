@@ -3,7 +3,7 @@
  * File: PurgingConfigProvider.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\Config;
@@ -17,10 +17,16 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
  */
 class PurgingConfigProvider implements PurgingConfigProviderInterface
 {
+    /**
+     * @var string
+     */
     const XML_PATH_USE_CUSTOM_HOST = 'lm_varnish/purge/different_purge_host';
     const XML_PATH_CUSTOM_HOST = 'lm_varnish/purge/custom_host';
     const XML_PATH_CUSTOM_HEADER_HOST = 'lm_varnish/purge/header_host';
 
+    /**
+     * @var string
+     */
     const PURGE_HOSTS_DELIMITER = ',';
 
     /**

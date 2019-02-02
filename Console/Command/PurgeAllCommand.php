@@ -3,7 +3,7 @@
  * File: PurgeAllCommand.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Console\Command;
@@ -18,6 +18,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class PurgeAllCommand extends AbstractPurgeCommand
 {
+    /**
+     * @var string
+     */
     const CLI_COMMAND = 'lm-varnish:cache-purge-all';
 
     /**
@@ -28,10 +31,6 @@ class PurgeAllCommand extends AbstractPurgeCommand
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Purge: homepage, categories, products; Regenerate: homepage, categories, products')
             ->addOption(
-                self::VERIFY_PEER_PARAM,
-                null,
-                InputOption::VALUE_OPTIONAL
-            )->addOption(
                 self::STORE_VIEW_ID,
                 null,
                 InputOption::VALUE_OPTIONAL
@@ -43,10 +42,7 @@ class PurgeAllCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($this->shouldSkipVerifyPeer($input)) {
-            $this->cacheCleaner->verifyPeer = false;
-        }
-        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
-        $this->cacheCleaner->purgeAll();
+        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
+        $this->varnishPurger->purgeAll();
     }
 }

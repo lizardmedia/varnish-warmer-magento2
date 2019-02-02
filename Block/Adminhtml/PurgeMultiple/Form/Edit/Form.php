@@ -3,7 +3,7 @@
  * File: Form.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeMultiple\Form\Edit;
@@ -23,7 +23,14 @@ use Magento\Store\Model\System\Store;
  */
 class Form extends Generic
 {
+    /**
+     * @var string
+     */
     const PROCESS_URL_FORM_PARAM = 'process_url';
+
+    /**
+     * @var string
+     */
     const STORE_VIEW_FORM_PARAM = 'store_id';
 
     /**

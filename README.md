@@ -40,7 +40,7 @@ app/code/LizardMedia/VarnishWarmer
 If you use ZIP file you will need to install the dependencies of the module
 manually
 ```
-composer require stil/curl-easy:^1.1
+composer require react/http-client:^0.5.9
 ```
 
 #### Install the module
@@ -100,6 +100,3 @@ See also the list of [contributors](https://github.com/lizardmedia/varnish-warme
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## To do
-
-* Remove CacheCleaner helper

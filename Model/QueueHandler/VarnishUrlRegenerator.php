@@ -3,14 +3,13 @@
  * File: VarnishUrlRegenerator.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
-use cURL\Event;
-use cURL\Request;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
+use React\HttpClient\Response;
 
 /**
  * Class VarnishUrlRegenerator
@@ -18,6 +17,9 @@ use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
  */
 class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRegeneratorInterface
 {
+    /**
+     * @var string
+     */
     const PROCESS_TYPE = 'REGENERATE';
 
     /**
@@ -26,7 +28,7 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
      */
     public function addUrlToRegenerate(string $url): void
     {
-        $this->requests[] = new Request($url);
+        $this->urls[] = $url;
         $this->total++;
     }
 
@@ -35,43 +37,13 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
      */
     public function runRegenerationQueue(): void
     {
-        $this->buildQueue();
-        $this->runQueueProcesses();
-    }
-
-    /**
-     * @return void
-     */
-    protected function buildQueue(): void
-    {
-        $this->queue
-            ->getDefaultOptions()
-            ->set(CURLOPT_TIMEOUT, self::CURL_TIMEOUT)
-            ->set(CURLOPT_RETURNTRANSFER, true);
-        $requests = &$this->requests;
-        $this->queue->addListener('complete', function (Event $event) use (&$requests) {
-            $this->counter++;
-            $url = curl_getinfo($event->request->getHandle(), CURLINFO_EFFECTIVE_URL);
-            $this->log($url);
-            $this->logProgress();
-            if ($next = array_pop($requests)) {
-                $event->queue->attach($next);
+        while (!empty($this->urls)) {
+            for($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
+                if (!empty($this->urls)) {
+                    $this->createRequest(array_pop($this->urls));
+                }
             }
-        });
-    }
-
-    /**
-     * @return void
-     */
-    protected function runQueueProcesses(): void
-    {
-        $numberOfProcesses = $this->getNumberOfParallelProcesses();
-        for ($i = 0; $i < $numberOfProcesses; $i++) {
-            $this->queue->attach(array_pop($this->requests));
-        }
-
-        if ($this->queue->count() > 0) {
-            $this->queue->send();
+            $this->loop->run();
         }
     }
 
@@ -89,5 +61,26 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
     protected function getQueueProcessType(): string
     {
         return self::PROCESS_TYPE;
+    }
+
+    /**
+     * @param string $url
+     * @return void
+     */
+    private function createRequest(string $url): void
+    {
+        $client = $this->clientFactory->create($this->loop);
+        $request = $client->request('GET', $url);
+        $request->on('response', function (Response $response) use ($url) {
+            $response->on(
+                'end',
+                function () use ($url){
+                    $this->counter++;
+                    $this->log($url);
+                    $this->logProgress();
+                }
+            );
+        });
+        $request->end();
     }
 }

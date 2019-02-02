@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
-@copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+@copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
@@ -58,6 +58,9 @@
 
     <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface"
                 type="LizardMedia\VarnishWarmer\Model\ProgressHandler\ProgressBarRenderer" />
+
+    <preference for="LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface"
+                type="LizardMedia\VarnishWarmer\Model\VarnishPurger" />
     <!--End of preference section-->
 
     <!--Constructor argument injection section-->
@@ -86,7 +89,8 @@
         <arguments>
             <argument name="name" xsi:type="string">cachePurgeLogger</argument>
             <argument name="handlers"  xsi:type="array">
-                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
+                <item name="debug" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
+                <item name="error" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\ErrorHandler</item>
             </argument>
         </arguments>
     </type>

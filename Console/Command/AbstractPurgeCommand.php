@@ -3,15 +3,14 @@
  * File: AbstractPurgeCommand.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Console\Command;
 
+use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
 use Symfony\Component\Console\Command\Command;
-use LizardMedia\VarnishWarmer\Helper\CacheCleaner;
 use Magento\Framework\App\State;
-use Symfony\Component\Console\Input\InputInterface;
 
 /**
  * Class AbstractPurgeCommand
@@ -19,35 +18,28 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 class AbstractPurgeCommand extends Command
 {
-    const VERIFY_PEER_PARAM = 'verify_peer';
+    /**
+     * @var string
+     */
     const STORE_VIEW_ID = 'store';
 
     /**
-     * @var CacheCleaner
+     * @var VarnishPurgerInterface
      */
-    protected $cacheCleaner;
+    protected $varnishPurger;
 
     /**
-     * PurgeAllCommand constructor.
+     * AbstractPurgeCommand constructor.
      * @param State $state
-     * @param CacheCleaner $cacheCleaner
+     * @param VarnishPurgerInterface $varnishPurger
      * @param null $name
      */
     public function __construct(
         State $state,
-        CacheCleaner $cacheCleaner,
+        VarnishPurgerInterface $varnishPurger,
         $name = null
     ) {
-        $this->cacheCleaner = $cacheCleaner;
+        $this->varnishPurger = $varnishPurger;
         parent::__construct($name);
-    }
-
-    /**
-     * @param InputInterface $input
-     * @return bool
-     */
-    protected function shouldSkipVerifyPeer(InputInterface $input): bool
-    {
-        return $input->getOption(self::VERIFY_PEER_PARAM) === 'false';
     }
 }

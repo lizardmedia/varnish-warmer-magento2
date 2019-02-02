@@ -3,11 +3,12 @@
  * File: FileQueueProgressLogger.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\ProgressHandler;
 
+use Exception;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressDataInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -20,6 +21,9 @@ use Zend\Json\Json;
  */
 class FileQueueProgressLogger implements QueueProgressLoggerInterface
 {
+    /**
+     * @var string
+     */
     const LOG_DIR = '/var/log/varnish/';
     const LOG_FILE = '.queue_progress.log';
 
@@ -65,6 +69,7 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
      * @param int $current
      * @param int $total
      * @return void
+     * @throws Exception
      */
     public function logProgress(string $type, int $current, int $total): void
     {
@@ -112,7 +117,7 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
         try {
             $loggedDataArray = Json::decode($loggedData, Json::TYPE_ARRAY);
             $progressData->addData($loggedDataArray);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
         return $progressData;
     }

@@ -3,11 +3,12 @@
  * File: FileLock.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\LockHandler;
 
+use Exception;
 use LizardMedia\VarnishWarmer\Api\LockHandler\LockInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem\Io\File;
@@ -18,6 +19,9 @@ use Magento\Framework\Filesystem\Io\File;
  */
 final class FileLock implements LockInterface
 {
+    /**
+     * @var string
+     */
     const LOCK_DIR = '/var/log/varnish/';
     const LOCK_FILE = '.varnish.lock.flag';
 
@@ -52,6 +56,7 @@ final class FileLock implements LockInterface
 
     /**
      * @return void
+     * @throws Exception
      */
     public function lock(): void
     {

@@ -3,7 +3,7 @@
  * File: RegenerateProductsCacheCommand.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2018 Lizard Media (http://lizardmedia.pl)
+ * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Console\Command;
@@ -18,6 +18,9 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class RegenerateProductsCacheCommand extends AbstractPurgeCommand
 {
+    /**
+     * @var string
+     */
     const CLI_COMMAND = 'lm-varnish:regenerate-products-cache';
 
     /**
@@ -28,10 +31,6 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
         $this->setName(self::CLI_COMMAND)
             ->setDescription(
                 'Get all active, enabled and visible products, clear and regenerate varnish cache by URL'
-            )->addOption(
-                self::VERIFY_PEER_PARAM,
-                null,
-                InputOption::VALUE_OPTIONAL
             )->addOption(
                 self::STORE_VIEW_ID,
                 null,
@@ -44,10 +43,7 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if ($this->shouldSkipVerifyPeer($input)) {
-            $this->cacheCleaner->verifyPeer = false;
-        }
-        $this->cacheCleaner->setStoreViewId((int)$input->getOption(self::STORE_VIEW_ID));
-        $this->cacheCleaner->purgeAndRegenerateProducts();
+        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
+        $this->varnishPurger->purgeAndRegenerateProducts();
     }
 }

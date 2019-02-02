@@ -89,7 +89,8 @@
         <arguments>
             <argument name="name" xsi:type="string">cachePurgeLogger</argument>
             <argument name="handlers"  xsi:type="array">
-                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
+                <item name="debug" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
+                <item name="error" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\ErrorHandler</item>
             </argument>
         </arguments>
     </type>

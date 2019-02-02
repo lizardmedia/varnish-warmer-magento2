@@ -8,6 +8,7 @@
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
+use Exception;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
@@ -75,7 +76,7 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
     public function runPurgeQueue(): void
     {
         while (!empty($this->urls)) {
-            for($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
+            for ($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
                 if (!empty($this->urls)) {
                     $this->createRequest(array_pop($this->urls));
                 }
@@ -112,13 +113,22 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
         $request->on('response', function (Response $response) use ($url) {
             $response->on(
                 'end',
-                function () use ($url){
+                function () use ($url) {
                     $this->counter++;
                     $this->log($url);
                     $this->logProgress();
                 }
             );
+            $response->on('error', function (Exception $e) use ($url) {
+                $this->logger->error(
+                    $e->getMessage(),
+                    [
+                        'url' => $url
+                    ]
+                );
+            });
         });
+
         $request->end();
     }
 

@@ -16,8 +16,13 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
+##### For release 1.0
 * Magento 2.2
 * PHP 7.1
+
+##### For realease 2.0
+* Magento 2.3
+* PHP 7.1/7.2
 
 ### Installing
 

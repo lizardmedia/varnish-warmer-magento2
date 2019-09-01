@@ -4,10 +4,10 @@
     "require": {
         "php": ">=7.1.0",
         "react/http-client": "^0.5.9",
-        "magento/framework": "^102"
+        "magento/framework": ">=102.0"
     },
     "type": "magento2-module",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "license": [
         "MIT"
     ],

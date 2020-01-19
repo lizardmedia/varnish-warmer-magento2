@@ -1,15 +1,21 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: VarnishUrlRegenerator.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
+ * @author Bartosz Kubicki <bartosz.kubicki@lizardmedia.pl>
+ * @copyright Copyright (C) 2020 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
+use Exception;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
 use React\HttpClient\Response;
+use RuntimeException;
 
 /**
  * Class VarnishUrlRegenerator
@@ -20,7 +26,7 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
     /**
      * @var string
      */
-    const PROCESS_TYPE = 'REGENERATE';
+    private const PROCESS_TYPE = 'REGENERATE';
 
     /**
      * @param string $url
@@ -35,16 +41,9 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
     /**
      * @return void
      */
-    public function runRegenerationQueue(): void
+    public function regenerate(): void
     {
-        while (!empty($this->urls)) {
-            for($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
-                if (!empty($this->urls)) {
-                    $this->createRequest(array_pop($this->urls));
-                }
-            }
-            $this->loop->run();
-        }
+        $this->runQueue();
     }
 
     /**
@@ -67,10 +66,15 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
      * @param string $url
      * @return void
      */
-    private function createRequest(string $url): void
+    protected function createRequest(string $url): void
     {
         $client = $this->clientFactory->create($this->loop);
         $request = $client->request('GET', $url);
+
+        $request->on('error', function (RuntimeException $exception) use ($url) {
+            $this->logger->error($exception->getMessage(), [$url]);
+        });
+
         $request->on('response', function (Response $response) use ($url) {
             $response->on(
                 'end',
@@ -80,7 +84,17 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
                     $this->logProgress();
                 }
             );
+
+            $response->on('error', function (Exception $exception) use ($url) {
+                $this->logger->error(
+                    $exception->getMessage(),
+                    [
+                        'url' => $url
+                    ]
+                );
+            });
         });
+
         $request->end();
     }
 }

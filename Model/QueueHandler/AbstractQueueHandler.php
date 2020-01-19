@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: AbstractQueueHandler.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
+ * @author Bartosz Kubicki <bartosz.kubicki@lizardmedia.pl>
  * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
  */
 
@@ -95,9 +99,31 @@ abstract class AbstractQueueHandler
 
     /**
      * @param string $url
-     * @return null
+     * @return void
      */
-    protected function log(string $url)
+    abstract protected function createRequest(string $url): void;
+
+    /**
+     * @return void
+     */
+    protected function runQueue(): void
+    {
+        while (!empty($this->urls)) {
+            for ($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
+                if (!empty($this->urls)) {
+                    $this->createRequest(array_pop($this->urls));
+                }
+            }
+
+            $this->loop->run();
+        }
+    }
+
+    /**
+     * @param string $url
+     * @return void
+     */
+    protected function log(string $url): void
     {
         $this->logger->debug("{$this->counter}/{$this->total}", ['url' => $url]);
     }
@@ -111,9 +137,9 @@ abstract class AbstractQueueHandler
     }
 
     /**
-     * @return null
+     * @return void
      */
-    protected function logProgress()
+    protected function logProgress(): void
     {
         $this->queueProgressLogger->logProgress($this->getQueueProcessType(), $this->counter, $this->total);
     }

@@ -23,5 +23,5 @@ interface VarnishUrlPurgerInterface
     /**
      * @return void
      */
-    public function runPurgeQueue(): void;
+    public function purge(): void;
 }

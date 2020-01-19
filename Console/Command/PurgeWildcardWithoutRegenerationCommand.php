@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgeWildcardWithoutRegenerationCommand.php
  *
@@ -21,12 +24,12 @@ class PurgeWildcardWithoutRegenerationCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    const CLI_COMMAND = 'lm-varnish:cache-purge-force';
+    private const CLI_COMMAND = 'lm-varnish:cache-purge-force';
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Purge: *; Regenerate: none; Skip process lock check')
@@ -38,9 +41,11 @@ class PurgeWildcardWithoutRegenerationCommand extends AbstractPurgeCommand
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
         $this->varnishPurger->purgeWildcardWithoutRegen();

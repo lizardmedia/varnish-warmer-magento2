@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgeHomepageCommand.php
  *
@@ -21,12 +24,12 @@ class PurgeHomepageCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    const CLI_COMMAND = 'lm-varnish:cache-purge-homepage';
+    private const CLI_COMMAND = 'lm-varnish:cache-purge-homepage';
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Purge: homepage; Regenerate: homepage')
@@ -40,7 +43,7 @@ class PurgeHomepageCommand extends AbstractPurgeCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
         $this->varnishPurger->purgeHomepage();

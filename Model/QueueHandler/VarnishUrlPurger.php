@@ -1,22 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: VarnishUrlPurger.php
  *
  * @author Maciej Sławik <maciej.slawik@lizardmedia.pl>
- * @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
+ * @author Bartosz Kubicki <bartosz.kubicki@lizardmedia.pl>
+ * @copyright Copyright (C) 2020 Lizard Media (http://lizardmedia.pl)
  */
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
-use Exception;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface;
 use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory;
 use Psr\Log\LoggerInterface;
-use React\HttpClient\Response;
 use React\EventLoop\Factory;
+use React\HttpClient\Response;
+use RuntimeException;
 
 /**
  * Class VarnishUrlPurger
@@ -27,12 +31,7 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
     /**
      * @var string
      */
-    const CURL_CUSTOMREQUEST = 'PURGE';
-
-    /**
-     * @var string
-     */
-    const PROCESS_TYPE = 'PURGE';
+    private const PROCESS_TYPE = 'PURGE';
 
     /**
      * @var PurgingConfigProviderInterface
@@ -73,16 +72,9 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
     /**
      * @return void
      */
-    public function runPurgeQueue(): void
+    public function purge(): void
     {
-        while (!empty($this->urls)) {
-            for ($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
-                if (!empty($this->urls)) {
-                    $this->createRequest(array_pop($this->urls));
-                }
-            }
-            $this->loop->run();
-        }
+        $this->runQueue();
     }
 
     /**
@@ -106,10 +98,15 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
      * @param string $url
      * @return void
      */
-    private function createRequest(string $url): void
+    protected function createRequest(string $url): void
     {
         $client = $this->clientFactory->create($this->loop);
-        $request = $client->request('GET', $url, $this->buildHeaders());
+        $request = $client->request('PURGE', $url, $this->buildHeaders());
+
+        $request->on('error', function (RuntimeException $exception) use ($url) {
+            $this->logger->error($exception->getMessage(), [$url]);
+        });
+
         $request->on('response', function (Response $response) use ($url) {
             $response->on(
                 'end',
@@ -119,9 +116,10 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
                     $this->logProgress();
                 }
             );
-            $response->on('error', function (Exception $e) use ($url) {
+
+            $response->on('error', function (RuntimeException $exception) use ($url) {
                 $this->logger->error(
-                    $e->getMessage(),
+                    $exception->getMessage(),
                     [
                         'url' => $url
                     ]

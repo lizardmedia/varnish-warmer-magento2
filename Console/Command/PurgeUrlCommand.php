@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgeUrlCommand.php
  *
@@ -22,17 +25,17 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    const CLI_COMMAND = 'lm-varnish:cache-refresh-url';
+    private const CLI_COMMAND = 'lm-varnish:cache-refresh-url';
 
     /**
      * @var string
      */
-    const URL_ARGUMENT = 'url';
+    private const URL_ARGUMENT = 'url';
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::CLI_COMMAND)
             ->setDescription('Clear varnish cache (make PURGE) and re-generate URL')
@@ -50,7 +53,7 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $url = $input->getArgument(self::URL_ARGUMENT);
         $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));

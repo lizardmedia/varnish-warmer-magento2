@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: RegenerateProductsCacheCommand.php
  *
@@ -21,12 +24,12 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    const CLI_COMMAND = 'lm-varnish:regenerate-products-cache';
+    private const CLI_COMMAND = 'lm-varnish:regenerate-products-cache';
 
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName(self::CLI_COMMAND)
             ->setDescription(
@@ -41,7 +44,7 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
         $this->varnishPurger->purgeAndRegenerateProducts();

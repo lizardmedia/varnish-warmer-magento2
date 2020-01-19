@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: AbstractPurgeCommand.php
  *
@@ -21,7 +24,7 @@ class AbstractPurgeCommand extends Command
     /**
      * @var string
      */
-    const STORE_VIEW_ID = 'store';
+    protected const STORE_VIEW_ID = 'store';
 
     /**
      * @var VarnishPurgerInterface
@@ -30,16 +33,14 @@ class AbstractPurgeCommand extends Command
 
     /**
      * AbstractPurgeCommand constructor.
-     * @param State $state
      * @param VarnishPurgerInterface $varnishPurger
      * @param null $name
      */
     public function __construct(
-        State $state,
         VarnishPurgerInterface $varnishPurger,
         $name = null
     ) {
-        $this->varnishPurger = $varnishPurger;
         parent::__construct($name);
+        $this->varnishPurger = $varnishPurger;
     }
 }

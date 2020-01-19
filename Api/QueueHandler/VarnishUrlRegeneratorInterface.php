@@ -23,5 +23,5 @@ interface VarnishUrlRegeneratorInterface
     /**
      * @return void
      */
-    public function runRegenerationQueue(): void;
+    public function regenerate(): void;
 }

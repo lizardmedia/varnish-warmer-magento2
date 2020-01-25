@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: GeneralConfigProvider.php
  *
@@ -20,27 +23,27 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
     /**
      * @var string
      */
-    const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish/general/max_concurrent_regeneration';
-    const XML_PATH_CONCURRENT_PURGE = 'lm_varnish/general/max_concurrent_purge';
+    private const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish/general/max_concurrent_regeneration';
+    private const XML_PATH_CONCURRENT_PURGE = 'lm_varnish/general/max_concurrent_purge';
 
     /**
      * @var int
      */
-    const REGENERATION_PROCESSES_DEFAULT = 10;
-    const REGENERATION_PROCESSES_MAX = 20;
-    const REGENERATION_PROCESSES_MIN = 1;
+    private const REGENERATION_PROCESSES_DEFAULT = 10;
+    private const REGENERATION_PROCESSES_MAX = 20;
+    private const REGENERATION_PROCESSES_MIN = 1;
 
     /**
      * @var int
      */
-    const PURGE_PROCESSES_DEFAULT = 4;
-    const PURGE_PROCESSES_MAX = 20;
-    const PURGE_PROCESSES_MIN = 1;
+    private const PURGE_PROCESSES_DEFAULT = 4;
+    private const PURGE_PROCESSES_MAX = 20;
+    private const PURGE_PROCESSES_MIN = 1;
 
     /**
      * @var ScopeConfigInterface
      */
-    protected $scopeConfig;
+    private $scopeConfig;
 
     /**
      * GeneralConfigProvider constructor.
@@ -56,7 +59,7 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
      */
     public function getMaxConcurrentRegenerationProcesses(): int
     {
-        $configValue = (int)$this->scopeConfig->getValue(self::XML_PATH_CONCURRENT_REGENERATION);
+        $configValue = (int) $this->scopeConfig->getValue(self::XML_PATH_CONCURRENT_REGENERATION);
         return $this->isMaxRegenerationProcessesConfigValid($configValue)
             ? $configValue
             : self::REGENERATION_PROCESSES_DEFAULT;
@@ -67,7 +70,7 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
      */
     public function getMaxConcurrentPurgeProcesses(): int
     {
-        $configValue = (int)$this->scopeConfig->getValue(self::XML_PATH_CONCURRENT_PURGE);
+        $configValue = (int) $this->scopeConfig->getValue(self::XML_PATH_CONCURRENT_PURGE);
         return $this->isMaxPurgeProcessesConfigValid($configValue)
             ? $configValue
             : self::PURGE_PROCESSES_DEFAULT;

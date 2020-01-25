@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: Form.php
  *
@@ -20,18 +23,20 @@ use Magento\Store\Model\System\Store;
 /**
  * Class Form
  * @package LizardMedia\VarnishWarmer\Block\Adminhtml\Form\PurgeMultiple
+ * @SuppressWarnings(PHPMD.LongVariable)
+ * @codeCoverageIgnore
  */
 class Form extends Generic
 {
     /**
      * @var string
      */
-    const PROCESS_URL_FORM_PARAM = 'process_url';
+    public const PROCESS_URL_FORM_PARAM = 'process_url';
 
     /**
      * @var string
      */
-    const STORE_VIEW_FORM_PARAM = 'store_id';
+    public const STORE_VIEW_FORM_PARAM = 'store_id';
 
     /**
      * @var Store
@@ -67,8 +72,9 @@ class Form extends Generic
 
     /**
      * @return void
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         parent::_construct();
         $this->setId('purgemultiple_form');
@@ -76,17 +82,18 @@ class Form extends Generic
     }
 
     /**
-     * @return WidgetForm
+     * @return Form
      * @throws LocalizedException
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
-    protected function _prepareForm()
+    protected function _prepareForm(): self
     {
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create(
             [
                 'data' => [
                     'id' => 'edit_form',
-                    'action' => $this->getFormTargerUrl(),
+                    'action' => $this->getFormTargetUrl(),
                     'method' => 'post'
                 ]
             ]
@@ -135,7 +142,7 @@ class Form extends Generic
     /**
      * @return string
      */
-    private function getFormTargerUrl()
+    private function getFormTargetUrl(): string
     {
         return $this->_urlBuilder->getUrl('lizardmediavarnish/purgemultiple/run');
     }

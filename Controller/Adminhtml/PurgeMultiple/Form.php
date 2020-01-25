@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -13,8 +14,6 @@ namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Page;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\View\Result\PageFactory;
 
 /**
@@ -41,9 +40,9 @@ class Form extends Action
     }
 
     /**
-     * @return ResultInterface|ResponseInterface
+     * @return Page
      */
-    public function execute()
+    public function execute(): Page
     {
         $resultPage = $this->initAction();
         $resultPage->getConfig()->getTitle()->prepend(__('Varnish: purge group of URLs'));
@@ -53,7 +52,7 @@ class Form extends Action
     /**
      * @return Page
      */
-    protected function initAction()
+    protected function initAction(): Page
     {
         /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();

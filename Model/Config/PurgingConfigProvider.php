@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgingConfigProvider.php
  *
@@ -20,19 +23,19 @@ class PurgingConfigProvider implements PurgingConfigProviderInterface
     /**
      * @var string
      */
-    const XML_PATH_USE_CUSTOM_HOST = 'lm_varnish/purge/different_purge_host';
-    const XML_PATH_CUSTOM_HOST = 'lm_varnish/purge/custom_host';
-    const XML_PATH_CUSTOM_HEADER_HOST = 'lm_varnish/purge/header_host';
+    private const XML_PATH_USE_CUSTOM_HOST = 'lm_varnish/purge/different_purge_host';
+    private const XML_PATH_CUSTOM_HOST = 'lm_varnish/purge/custom_host';
+    private const XML_PATH_CUSTOM_HEADER_HOST = 'lm_varnish/purge/header_host';
 
     /**
      * @var string
      */
-    const PURGE_HOSTS_DELIMITER = ',';
+    private const PURGE_HOSTS_DELIMITER = ',';
 
     /**
      * @var ScopeConfigInterface
      */
-    protected $scopeConfig;
+    private $scopeConfig;
 
     /**
      * GeneralConfigProvider constructor.
@@ -48,7 +51,7 @@ class PurgingConfigProvider implements PurgingConfigProviderInterface
      */
     public function isPurgeCustomHostEnabled(): bool
     {
-        return (bool)$this->scopeConfig->getValue(self::XML_PATH_USE_CUSTOM_HOST);
+        return (bool) $this->scopeConfig->getValue(self::XML_PATH_USE_CUSTOM_HOST);
     }
 
     /**
@@ -66,6 +69,6 @@ class PurgingConfigProvider implements PurgingConfigProviderInterface
      */
     public function getAdditionalHostForHeader(): string
     {
-        return (string)$this->scopeConfig->getValue(self::XML_PATH_CUSTOM_HEADER_HOST);
+        return (string) $this->scopeConfig->getValue(self::XML_PATH_CUSTOM_HEADER_HOST);
     }
 }

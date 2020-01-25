@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: Form.php
  *
@@ -12,8 +15,8 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Page;
 use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Class Form
@@ -39,9 +42,9 @@ class Form extends Action
     }
 
     /**
-     * @return ResultInterface|ResponseInterface
+     * @return Page
      */
-    public function execute()
+    public function execute(): Page
     {
         $resultPage = $this->initAction();
         $resultPage->getConfig()->getTitle()->prepend(__('Varnish: purge single URL'));
@@ -51,7 +54,7 @@ class Form extends Action
     /**
      * @return Page
      */
-    protected function initAction()
+    protected function initAction(): Page
     {
         /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();

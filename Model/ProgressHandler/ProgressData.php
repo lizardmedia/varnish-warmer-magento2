@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: ProgressData.php
  *
@@ -27,9 +30,9 @@ class ProgressData extends AbstractExtensibleModel implements ProgressDataInterf
 
     /**
      * @param int $current
-     * @return null
+     * @return void
      */
-    public function setCurrent(int $current)
+    public function setCurrent(int $current): void
     {
         $this->setData(self::FIELD_CURRENT, $current);
     }
@@ -44,9 +47,9 @@ class ProgressData extends AbstractExtensibleModel implements ProgressDataInterf
 
     /**
      * @param int $total
-     * @return null
+     * @return void
      */
-    public function setTotal(int $total)
+    public function setTotal(int $total): void
     {
         $this->setData(self::FIELD_TOTAL, $total);
     }
@@ -61,9 +64,9 @@ class ProgressData extends AbstractExtensibleModel implements ProgressDataInterf
 
     /**
      * @param string $type
-     * @return null
+     * @return void
      */
-    public function setProcessType(string $type)
+    public function setProcessType(string $type): void
     {
         $this->setData(self::FIELD_PROCESS_TYPE, $type);
     }

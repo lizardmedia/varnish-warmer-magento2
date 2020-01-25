@@ -16,8 +16,8 @@ use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\LoopInterface;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 
 /**
  * Class AbstractQueueHandler
@@ -121,11 +121,18 @@ abstract class AbstractQueueHandler
 
     /**
      * @param string $url
+     * @param int|null $code
+     * @param array|null $headers
      * @return void
      */
-    protected function log(string $url): void
+    protected function log(string $url, ?int $code = null, ?array $headers = []): void
     {
-        $this->logger->debug("{$this->counter}/{$this->total}", ['url' => $url]);
+        $context = ['url' => $url, 'code' => $code, 'headers' => implode(',', $headers)];
+
+        $this->logger->debug(
+            "{$this->counter}/{$this->total}",
+            $context
+        );
     }
 
     /**

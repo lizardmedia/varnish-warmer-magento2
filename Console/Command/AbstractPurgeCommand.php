@@ -13,7 +13,6 @@ namespace LizardMedia\VarnishWarmer\Console\Command;
 
 use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
 use Symfony\Component\Console\Command\Command;
-use Magento\Framework\App\State;
 
 /**
  * Class AbstractPurgeCommand

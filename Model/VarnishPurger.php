@@ -29,6 +29,7 @@ use Magento\Store\Model\Store;
 /**
  * Class VarnishPurger
  * @package LizardMedia\VarnishWarmer\Model
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class VarnishPurger implements VarnishPurgerInterface
 {
@@ -91,6 +92,7 @@ class VarnishPurger implements VarnishPurgerInterface
      * @param ProductUrlProviderInterface $productUrlProvider
      * @param CategoryUrlProviderInterface $categoryUrlProvider
      * @param PurgingConfigProviderInterface $purgingConfigProvider
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         VarnishUrlRegeneratorFactory $varnishUrlRegeneratorFactory,
@@ -263,6 +265,7 @@ class VarnishPurger implements VarnishPurgerInterface
         foreach ($this->getPurgeBaseUrls() as $purgeBaseUrl) {
             $url = $purgeBaseUrl . $relativeUrl;
             $this->varnishUrlPurger->addUrlToPurge($url);
+
             if ($autoRegenerate) {
                 $this->addUrlToRegenerate($relativeUrl);
             }
@@ -285,6 +288,7 @@ class VarnishPurger implements VarnishPurgerInterface
     private function regenerateCategories(): void
     {
         $categories = $this->getCategories();
+
         foreach ($categories as $category) {
             $this->addUrlToRegenerate($category['request_path']);
         }
@@ -296,6 +300,7 @@ class VarnishPurger implements VarnishPurgerInterface
     private function processCategoriesPurgeAndRegenerate(): void
     {
         $categories = $this->getCategories();
+
         foreach ($categories as $category) {
             $this->addUrlToPurge($category['request_path'], true);
         }
@@ -307,7 +312,8 @@ class VarnishPurger implements VarnishPurgerInterface
     private function processProductsRegenerate(): void
     {
         $productUrls = $this->getAllProductsUrls();
-        foreach ($productUrls as $key => $url) {
+
+        foreach ($productUrls as $url) {
             $this->addUrlToRegenerate($url['request_path']);
         }
     }
@@ -318,7 +324,8 @@ class VarnishPurger implements VarnishPurgerInterface
     private function processProductsPurgeAndRegenerate(): void
     {
         $productUrls = $this->getAllProductsUrls();
-        foreach ($productUrls as $key => $url) {
+
+        foreach ($productUrls as $url) {
             $this->addUrlToPurge($url['request_path'], true);
         }
     }
@@ -373,7 +380,7 @@ class VarnishPurger implements VarnishPurgerInterface
             $this->purgeBaseUrls = $this->purgingConfigProvider->getCustomPurgeHosts();
         } else {
             $baseUrl = $this->scopeConfig->getValue(
-                Store::XML_PATH_UNSECURE_BASE_URL,
+                Store::XML_PATH_SECURE_BASE_URL,
                 ScopeInterface::SCOPE_STORE,
                 $this->storeViewId
             );
@@ -393,7 +400,7 @@ class VarnishPurger implements VarnishPurgerInterface
     private function setRegenBaseUrl(): void
     {
         $this->regenBaseUrl = (string) $this->scopeConfig->getValue(
-            Store::XML_PATH_UNSECURE_BASE_URL,
+            Store::XML_PATH_SECURE_BASE_URL,
             ScopeInterface::SCOPE_STORE,
             $this->storeViewId
         );
@@ -411,6 +418,7 @@ class VarnishPurger implements VarnishPurgerInterface
         if (!$this->purgeBaseUrls) {
             $this->setPurgeBaseUrls();
         }
+
         return $this->purgeBaseUrls;
     }
 
@@ -422,6 +430,7 @@ class VarnishPurger implements VarnishPurgerInterface
         if (!$this->regenBaseUrl) {
             $this->setRegenBaseUrl();
         }
+
         return $this->regenBaseUrl;
     }
 }

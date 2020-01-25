@@ -24,6 +24,10 @@ These instructions will get you a copy of the project up and running on your loc
 * Magento 2.3
 * PHP 7.1/7.2
 
+##### For realease 2.2
+* Magento 2.3
+* PHP 7.1/7.2/7.3
+
 ### Installing
 
 #### Download the module
@@ -70,7 +74,7 @@ The commands can be run using Magento built-in CLI:
 * ``lm-varnish:cache-purge-general`` - purges and regenerates homepage and categories
 * ``lm-varnish:cache-purge-wildcard`` - purges * and regenerates homepage, categories and products
 * ``lm-varnish:cache-purge-all`` - purges and regenerates homepage, categories and products
-* ``lm-varnish:cache-purge-force`` - purges * without regenerating. Ommits lock check
+* ``lm-varnish:cache-purge-force`` - purges * without regenerating. Omits lock check
 * ``lm-varnish:cache-purge-products`` - purges and regenerates products 
 * ``lm-varnish:cache-refresh-url`` - purges and regenerates single URL given as argument
 
@@ -98,6 +102,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Authors
 
 * **Maciej Sławik** - *Initial work* - [Lizard Media](https://github.com/maciejslawik)
+* **Bartosz Kubicki** - *Fixes & maintenance* - [Lizard Media](https://github.com/bartoszkubicki)
 
 See also the list of [contributors](https://github.com/lizardmedia/varnish-warmer-magento2/contributors) who participated in this project.
 

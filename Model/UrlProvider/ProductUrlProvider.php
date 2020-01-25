@@ -10,16 +10,18 @@ namespace LizardMedia\VarnishWarmer\Model\UrlProvider;
 
 use LizardMedia\VarnishWarmer\Api\UrlProvider\ProductUrlProviderInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\ResourceConnectionFactory;
 use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\Product\Visibility;
 
 /**
  * Class ProductUrlProvider
  * @package LizardMedia\VarnishWarmer\Model\UrlProvider
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class ProductUrlProvider implements ProductUrlProviderInterface
 {
@@ -37,6 +39,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
      * ProductUrlProvider constructor.
      * @param ProductCollectionFactory $productCollectionFactory
      * @param ResourceConnectionFactory $resourceConnectionFactory
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
@@ -112,7 +115,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
      */
     protected function getAvailableProductsIds(): array
     {
-        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $productCollection */
+        /** @var Collection $productCollection */
         $productCollection = $this->productCollectionFactory->create();
         $productCollection->addFieldToFilter(
             ProductInterface::VISIBILITY,

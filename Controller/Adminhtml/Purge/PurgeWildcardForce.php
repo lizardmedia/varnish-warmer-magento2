@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgeWildcardForce.php
  *
@@ -10,6 +13,7 @@ namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\Purge;
 
 use LizardMedia\VarnishWarmer\Console\Command\PurgeWildcardWithoutRegenerationCommand;
 use LizardMedia\VarnishWarmer\Controller\Adminhtml\Purge;
+use Magento\Framework\Controller\Result\Redirect;
 
 /**
  * Class PurgeWildcardForce
@@ -18,9 +22,9 @@ use LizardMedia\VarnishWarmer\Controller\Adminhtml\Purge;
 class PurgeWildcardForce extends Purge
 {
     /**
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return Redirect
      */
-    public function execute()
+    public function execute(): Redirect
     {
         $this->runCommand();
         $this->addProcessNotification();
@@ -29,11 +33,11 @@ class PurgeWildcardForce extends Purge
     }
 
     /**
-     * @return null
+     * @return void
      */
-    protected function addProcessNotification()
+    protected function addProcessNotification(): void
     {
-        $this->messageManager->addNotice(
+        $this->messageManager->addNoticeMessage(
             __('LizardMedia: cache is purged in background, it may take up to 20 seconds.')
         );
     }

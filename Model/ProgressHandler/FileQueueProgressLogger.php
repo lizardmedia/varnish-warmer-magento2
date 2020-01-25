@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: FileQueueProgressLogger.php
  *
@@ -24,8 +27,8 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
     /**
      * @var string
      */
-    const LOG_DIR = '/var/log/varnish/';
-    const LOG_FILE = '.queue_progress.log';
+    private const LOG_DIR = '/var/log/varnish/';
+    private const LOG_FILE = '.queue_progress.log';
 
     /**
      * @var File
@@ -119,6 +122,7 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
             $progressData->addData($loggedDataArray);
         } catch (Exception $e) {
         }
+
         return $progressData;
     }
 }

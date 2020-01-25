@@ -24,7 +24,7 @@ class PurgeAllCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    private const CLI_COMMAND = 'lm-varnish:cache-purge-all';
+    public const CLI_COMMAND = 'lm-varnish:cache-purge-all';
 
     /**
      * @return void
@@ -44,6 +44,7 @@ class PurgeAllCommand extends AbstractPurgeCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {

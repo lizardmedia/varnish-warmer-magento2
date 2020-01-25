@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: FileLock.php
  *
@@ -22,8 +25,8 @@ final class FileLock implements LockInterface
     /**
      * @var string
      */
-    const LOCK_DIR = '/var/log/varnish/';
-    const LOCK_FILE = '.varnish.lock.flag';
+    private const LOCK_DIR = '/var/log/varnish/';
+    private const LOCK_FILE = '.varnish.lock.flag';
 
     /**
      * @var File

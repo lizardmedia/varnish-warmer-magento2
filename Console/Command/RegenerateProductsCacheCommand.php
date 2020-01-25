@@ -27,7 +27,7 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
     public const CLI_COMMAND = 'lm-varnish:regenerate-products-cache';
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function configure(): void
     {
@@ -49,7 +49,7 @@ class RegenerateProductsCacheCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->varnishPurger->purgeAndRegenerateProducts();
+        $this->passStoreViewIfSet($input);
+        $this->varnishActionManager->purgeAndRegenerateProducts();
     }
 }

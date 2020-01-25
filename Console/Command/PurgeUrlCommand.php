@@ -59,7 +59,7 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $url = $input->getArgument(self::URL_ARGUMENT);
-        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->varnishPurger->purgeAndRegenerateUrl($url);
+        $this->passStoreViewIfSet($input);
+        $this->varnishActionManager->purgeAndRegenerateUrl($url);
     }
 }

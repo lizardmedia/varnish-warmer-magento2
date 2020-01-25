@@ -21,6 +21,7 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 /**
  * Class CategoryUrlProvider
  * @package LizardMedia\VarnishWarmer\Model\UrlProvider
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class CategoryUrlProvider implements CategoryUrlProviderInterface
 {
@@ -38,6 +39,7 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
      * CategoryUrlProvider constructor.
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param ResourceConnectionFactory $resourceConnectionFactory
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,

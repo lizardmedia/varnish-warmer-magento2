@@ -7,7 +7,7 @@
 # Magento2 Varnish Cache Warmer 
 
 Magento2 module for handling Varnish Cache cleaning and regenerating using admin panel
-and CLI. It uses multiple threads to run the commands to minimize the time required 
+and CLI. It uses multiple process to run the commands to minimize the time required
 to run.
 
 ## Getting Started
@@ -86,7 +86,7 @@ php bin/magento lm-varnish:cache-refresh-url "*" --store=1
 
 ## For developers
 
-The number of threads used for purging and regenerating Varnish cache can be customized
+The number of process used for purging and regenerating Varnish cache can be customized
 in the admin panel. The max number of processes is specified in 
 ``LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider``
 If you have a powerful server you can modify those numbers to use more resources.

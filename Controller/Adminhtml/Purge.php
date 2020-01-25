@@ -13,7 +13,7 @@ namespace LizardMedia\VarnishWarmer\Controller\Adminhtml;
 
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
-use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
+use LizardMedia\VarnishWarmer\Api\VarnishActionManagerInterface;
 use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -42,9 +42,9 @@ abstract class Purge extends Action
     protected $directoryList;
 
     /**
-     * @var VarnishPurgerInterface
+     * @var VarnishActionManagerInterface
      */
-    protected $varnishPurger;
+    protected $varnishActionManager;
 
     /**
      * @var QueueProgressLoggerInterface
@@ -65,7 +65,7 @@ abstract class Purge extends Action
      * Purge constructor.
      * @param Context $context
      * @param DirectoryList $directoryList
-     * @param VarnishPurgerInterface $varnishPurger
+     * @param VarnishActionManagerInterface $varnishActionManager
      * @param QueueProgressLoggerInterface $queueProgressLogger
      * @param ProgressBarRendererInterface $queueProgressBarRenderer
      * @param Factory $messageFactory
@@ -74,7 +74,7 @@ abstract class Purge extends Action
     public function __construct(
         Context $context,
         DirectoryList $directoryList,
-        VarnishPurgerInterface $varnishPurger,
+        VarnishActionManagerInterface $varnishActionManager,
         QueueProgressLoggerInterface $queueProgressLogger,
         ProgressBarRendererInterface $queueProgressBarRenderer,
         Factory $messageFactory
@@ -82,7 +82,7 @@ abstract class Purge extends Action
         parent::__construct($context);
         $this->messageManager = $context->getMessageManager();
         $this->directoryList = $directoryList;
-        $this->varnishPurger = $varnishPurger;
+        $this->varnishActionManager = $varnishActionManager;
         $this->queueProgressLogger = $queueProgressLogger;
         $this->queueProgressBarRenderer = $queueProgressBarRenderer;
         $this->messageFactory = $messageFactory;
@@ -140,7 +140,7 @@ abstract class Purge extends Action
                         . '(started at: %s), '
                         . 'cannot run again until it finishes. <br />%s'
                     ),
-                    $this->varnishPurger->getLockMessage(),
+                    $this->varnishActionManager->getLockMessage(),
                     $this->queueProgressBarRenderer->getProgressHtml($this->queueProgressLogger->getProgressData())
                 )
             )
@@ -164,7 +164,7 @@ abstract class Purge extends Action
      */
     protected function isLocked(): bool
     {
-        return $this->varnishPurger->isLocked();
+        return $this->varnishActionManager->isLocked();
     }
 
     /**

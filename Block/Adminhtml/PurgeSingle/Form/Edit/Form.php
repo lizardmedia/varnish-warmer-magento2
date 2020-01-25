@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit;
 
 use Magento\Backend\Block\Template\Context;
-use Magento\Backend\Block\Widget\Form as WidgetForm;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Framework\Data\FormFactory;
 use Magento\Framework\Exception\LocalizedException;

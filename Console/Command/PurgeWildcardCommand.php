@@ -48,7 +48,7 @@ class PurgeWildcardCommand extends AbstractPurgeCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->varnishPurger->purgeWildcard();
+        $this->passStoreViewIfSet($input);
+        $this->varnishActionManager->purgeWildcard();
     }
 }

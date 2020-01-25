@@ -7,3 +7,4 @@
 * major refactor
 * adding missing return types/types hints
 * support PHP 7.3
+* fix for case when urls uses store codes inside after domain

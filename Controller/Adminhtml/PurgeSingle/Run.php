@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: Run.php
  *
@@ -11,7 +14,7 @@ namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeSingle;
 use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form;
 use LizardMedia\VarnishWarmer\Console\Command\PurgeUrlCommand;
 use LizardMedia\VarnishWarmer\Controller\Adminhtml\Purge;
-use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Redirect;
 
 /**
  * Class Run
@@ -20,10 +23,9 @@ use Magento\Framework\App\ResponseInterface;
 class Run extends Purge
 {
     /**
-     * @return \Magento\Framework\Controller\ResultInterface|ResponseInterface
-     * @throws \Magento\Framework\Exception\NotFoundException
+     * @return Redirect
      */
-    public function execute()
+    public function execute(): Redirect
     {
         if ($this->isForcePurge() || !$this->isLocked()) {
             $this->runCommand();
@@ -48,7 +50,7 @@ class Run extends Purge
      */
     protected function getAdditionalParams(): string
     {
-        $url = (string)$this->getRequest()->getParam(Form::URL_FORM_PARAM);
+        $url = (string) $this->getRequest()->getParam(Form::URL_FORM_PARAM);
         $additionalParams = " \"{$url}\"";
         $additionalParams .= parent::getAdditionalParams();
         return $additionalParams;

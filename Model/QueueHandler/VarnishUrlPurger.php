@@ -25,6 +25,7 @@ use RuntimeException;
 /**
  * Class VarnishUrlPurger
  * @package LizardMedia\VarnishWarmer\Model\QueueHandler
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerInterface
 {
@@ -108,11 +109,14 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
         });
 
         $request->on('response', function (Response $response) use ($url) {
+            $responseCode = $response->getCode();
+            $responseHeaders = $response->getHeaders();
+
             $response->on(
                 'end',
-                function () use ($url) {
+                function () use ($url, $responseCode, $responseHeaders) {
                     $this->counter++;
-                    $this->log($url);
+                    $this->log($url, $responseCode, $responseHeaders);
                     $this->logProgress();
                 }
             );

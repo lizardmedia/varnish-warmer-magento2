@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: PurgeGeneral.php
  *
@@ -17,21 +20,6 @@ use LizardMedia\VarnishWarmer\Controller\Adminhtml\Purge;
  */
 class PurgeGeneral extends Purge
 {
-    /**
-     * @return \Magento\Framework\Controller\Result\Redirect
-     */
-    public function execute()
-    {
-        if (!$this->isLocked()) {
-            $this->runCommand();
-            $this->addProcessNotification();
-        } else {
-            $this->addProcessLockWarning();
-        }
-
-        return $this->getRedirect();
-    }
-
     /**
      * @return string
      */

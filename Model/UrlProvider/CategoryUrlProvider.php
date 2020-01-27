@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: CategoryUrlProvider.php
  *
@@ -9,14 +12,16 @@
 namespace LizardMedia\VarnishWarmer\Model\UrlProvider;
 
 use LizardMedia\VarnishWarmer\Api\UrlProvider\CategoryUrlProviderInterface;
+use Magento\Catalog\Model\ResourceModel\Category\Collection;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\ResourceConnectionFactory;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
 /**
  * Class CategoryUrlProvider
  * @package LizardMedia\VarnishWarmer\Model\UrlProvider
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 class CategoryUrlProvider implements CategoryUrlProviderInterface
 {
@@ -34,6 +39,7 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
      * CategoryUrlProvider constructor.
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param ResourceConnectionFactory $resourceConnectionFactory
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
@@ -75,7 +81,7 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
      */
     protected function getAvailableCategoriesIds(): array
     {
-        /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $categoryCollection */
+        /** @var Collection $categoryCollection */
         $categoryCollection = $this->categoryCollectionFactory->create();
         $categoryCollection->addFieldToFilter(
             'is_active',

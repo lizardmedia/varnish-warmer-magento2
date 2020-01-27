@@ -24,7 +24,7 @@ class PurgeHomepageCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    private const CLI_COMMAND = 'lm-varnish:cache-purge-homepage';
+    public const CLI_COMMAND = 'lm-varnish:cache-purge-homepage';
 
     /**
      * @return void
@@ -41,11 +41,14 @@ class PurgeHomepageCommand extends AbstractPurgeCommand
     }
 
     /**
-     * {@inheritdoc}
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->varnishPurger->purgeHomepage();
+        $this->passStoreViewIfSet($input);
+        $this->varnishActionManager->purgeHomepage();
     }
 }

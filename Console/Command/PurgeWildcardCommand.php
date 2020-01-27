@@ -24,7 +24,7 @@ class PurgeWildcardCommand extends AbstractPurgeCommand
     /**
      * @var string
      */
-    private const CLI_COMMAND = 'lm-varnish:cache-purge-wildcard';
+    public const CLI_COMMAND = 'lm-varnish:cache-purge-wildcard';
 
     /**
      * @return void
@@ -44,10 +44,11 @@ class PurgeWildcardCommand extends AbstractPurgeCommand
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return void
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->varnishPurger->setStoreViewId((int) $input->getOption(self::STORE_VIEW_ID));
-        $this->varnishPurger->purgeWildcard();
+        $this->passStoreViewIfSet($input);
+        $this->varnishActionManager->purgeWildcard();
     }
 }

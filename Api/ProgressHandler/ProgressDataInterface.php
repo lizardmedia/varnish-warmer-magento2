@@ -14,9 +14,20 @@ namespace LizardMedia\VarnishWarmer\Api\ProgressHandler;
  */
 interface ProgressDataInterface
 {
-    const FIELD_CURRENT = 'current';
-    const FIELD_TOTAL = 'total';
-    const FIELD_PROCESS_TYPE = 'process_type';
+    /**
+     * @var string
+     */
+    public const FIELD_CURRENT = 'current';
+
+    /**
+     * @var string
+     */
+    public const FIELD_TOTAL = 'total';
+
+    /**
+     * @var string
+     */
+    public const FIELD_PROCESS_TYPE = 'process_type';
 
     /**
      * @return int|null

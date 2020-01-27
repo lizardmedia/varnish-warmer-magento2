@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -10,11 +11,10 @@ declare(strict_types=1);
 
 namespace LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple;
 
-use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form as PurgeSingleForm;
 use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeMultiple\Form\Edit\Form as PurgeMultipleForm;
+use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form as PurgeSingleForm;
 use Magento\Backend\App\Action;
 use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Run
@@ -23,13 +23,14 @@ use Magento\Framework\Controller\ResultInterface;
 class Run extends Action
 {
     /**
-     * @return ResponseInterface|ResultInterface|void
+     * @return ResponseInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface
     {
         $storeId = $this->getRequest()->getParam(PurgeMultipleForm::STORE_VIEW_FORM_PARAM);
         $destinationUrl = $this->getRequest()->getParam(PurgeMultipleForm::PROCESS_URL_FORM_PARAM);
-        $this->_redirect(
+
+        return $this->_redirect(
             $destinationUrl,
             [
                 PurgeSingleForm::STORE_VIEW_FORM_PARAM => $storeId

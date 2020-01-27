@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: Form.php
  *
@@ -9,7 +12,6 @@
 namespace LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit;
 
 use Magento\Backend\Block\Template\Context;
-use Magento\Backend\Block\Widget\Form as WidgetForm;
 use Magento\Backend\Block\Widget\Form\Generic;
 use Magento\Framework\Data\FormFactory;
 use Magento\Framework\Exception\LocalizedException;
@@ -19,23 +21,24 @@ use Magento\Store\Model\System\Store;
 /**
  * Class Form
  * @package LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit
+ * @codeCoverageIgnore
  */
 class Form extends Generic
 {
     /**
      * @var string
      */
-    const URL_FORM_PARAM = 'url';
+    public const URL_FORM_PARAM = 'url';
 
     /**
      * @var string
      */
-    const STORE_VIEW_FORM_PARAM = 'store_id';
+    public const STORE_VIEW_FORM_PARAM = 'store_id';
 
     /**
      * @var string
      */
-    const FORCE_PURGE_FORM_PARAM = 'force_purge';
+    public const FORCE_PURGE_FORM_PARAM = 'force_purge';
 
     /**
      * @var Store
@@ -63,8 +66,9 @@ class Form extends Generic
 
     /**
      * @return void
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         parent::_construct();
         $this->setId('purgesingle_form');
@@ -72,17 +76,18 @@ class Form extends Generic
     }
 
     /**
-     * @return WidgetForm
+     * @return Form
      * @throws LocalizedException
+     * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
-    protected function _prepareForm()
+    protected function _prepareForm(): self
     {
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create(
             [
                 'data' => [
                     'id' => 'edit_form',
-                    'action' => $this->getFormTargerUrl(),
+                    'action' => $this->getFormTargetUrl(),
                     'method' => 'post'
                 ]
             ]
@@ -142,7 +147,7 @@ class Form extends Generic
     /**
      * @return string
      */
-    private function getFormTargerUrl()
+    private function getFormTargetUrl(): string
     {
         return $this->_urlBuilder->getUrl('lizardmediavarnish/purgesingle/run');
     }

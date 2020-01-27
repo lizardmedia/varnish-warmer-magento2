@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * File: Purge.php
  *
@@ -10,19 +13,21 @@ namespace LizardMedia\VarnishWarmer\Controller\Adminhtml;
 
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
-use LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface;
+use LizardMedia\VarnishWarmer\Api\VarnishActionManagerInterface;
+use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\Redirect;
-use Magento\Framework\Message\ManagerInterface;
-use LizardMedia\VarnishWarmer\Block\Adminhtml\PurgeSingle\Form\Edit\Form;
 use Magento\Framework\Message\Factory;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Message\MessageInterface;
 
 /**
  * Class Purge
  * @package LizardMedia\VarnishWarmer\Controller\Adminhtml
+ * @SuppressWarnings(PHPMD.LongVariable)
  */
 abstract class Purge extends Action
 {
@@ -37,9 +42,9 @@ abstract class Purge extends Action
     protected $directoryList;
 
     /**
-     * @var VarnishPurgerInterface
+     * @var VarnishActionManagerInterface
      */
-    protected $varnishPurger;
+    protected $varnishActionManager;
 
     /**
      * @var QueueProgressLoggerInterface
@@ -60,28 +65,42 @@ abstract class Purge extends Action
      * Purge constructor.
      * @param Context $context
      * @param DirectoryList $directoryList
-     * @param VarnishPurgerInterface $varnishPurger
+     * @param VarnishActionManagerInterface $varnishActionManager
      * @param QueueProgressLoggerInterface $queueProgressLogger
      * @param ProgressBarRendererInterface $queueProgressBarRenderer
      * @param Factory $messageFactory
-     * @param array $data
+     * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         Context $context,
         DirectoryList $directoryList,
-        VarnishPurgerInterface $varnishPurger,
+        VarnishActionManagerInterface $varnishActionManager,
         QueueProgressLoggerInterface $queueProgressLogger,
         ProgressBarRendererInterface $queueProgressBarRenderer,
-        Factory $messageFactory,
-        array $data = []
+        Factory $messageFactory
     ) {
         parent::__construct($context);
         $this->messageManager = $context->getMessageManager();
         $this->directoryList = $directoryList;
-        $this->varnishPurger = $varnishPurger;
+        $this->varnishActionManager = $varnishActionManager;
         $this->queueProgressLogger = $queueProgressLogger;
         $this->queueProgressBarRenderer = $queueProgressBarRenderer;
         $this->messageFactory = $messageFactory;
+    }
+
+    /**
+     * @return Redirect
+     */
+    public function execute(): Redirect
+    {
+        if (!$this->isLocked()) {
+            $this->runCommand();
+            $this->addProcessNotification();
+        } else {
+            $this->addProcessLockWarning();
+        }
+
+        return $this->getRedirect();
     }
 
     /**
@@ -100,17 +119,17 @@ abstract class Purge extends Action
     }
 
     /**
-     * @return null
+     * @return void
      */
-    protected function addProcessNotification()
+    protected function addProcessNotification(): void
     {
         $this->messageManager->addNoticeMessage(__('LizardMedia: cache is purged in background, it may take a while.'));
     }
 
     /**
-     * @return null
+     * @return void
      */
-    protected function addProcessLockWarning()
+    protected function addProcessLockWarning(): void
     {
         $this->messageManager->addMessage(
             $this->messageFactory->create(
@@ -121,7 +140,7 @@ abstract class Purge extends Action
                         . '(started at: %s), '
                         . 'cannot run again until it finishes. <br />%s'
                     ),
-                    $this->varnishPurger->getLockMessage(),
+                    $this->varnishActionManager->getLockMessage(),
                     $this->queueProgressBarRenderer->getProgressHtml($this->queueProgressLogger->getProgressData())
                 )
             )
@@ -133,10 +152,10 @@ abstract class Purge extends Action
      */
     protected function runCommand(): void
     {
-        $additional_params = $this->getAdditionalParams();
+        $additionalParams = $this->getAdditionalParams();
         $baseDir = $this->directoryList->getRoot();
         $cliCommand = $this->getCliCommand();
-        $cmd = "nohup {$baseDir}/bin/magento {$cliCommand}{$additional_params}>/dev/null 2>&1 &";
+        $cmd = "nohup {$baseDir}/bin/magento {$cliCommand}{$additionalParams}>/dev/null 2>&1 &";
         exec($cmd);
     }
 
@@ -145,7 +164,7 @@ abstract class Purge extends Action
      */
     protected function isLocked(): bool
     {
-        return $this->varnishPurger->isLocked();
+        return $this->varnishActionManager->isLocked();
     }
 
     /**
@@ -154,9 +173,11 @@ abstract class Purge extends Action
     protected function getAdditionalParams(): string
     {
         $additionalParams = '';
+
         if ($this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM)) {
             $additionalParams .= ' --store=' . $this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM);
         }
+
         return $additionalParams;
     }
 }

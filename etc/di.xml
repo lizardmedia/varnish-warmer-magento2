@@ -59,55 +59,64 @@
     <preference for="LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressBarRendererInterface"
                 type="LizardMedia\VarnishWarmer\Model\ProgressHandler\ProgressBarRenderer" />
 
-    <preference for="LizardMedia\VarnishWarmer\Api\VarnishPurgerInterface"
-                type="LizardMedia\VarnishWarmer\Model\VarnishPurger" />
+    <preference for="LizardMedia\VarnishWarmer\Api\VarnishActionManagerInterface"
+                type="LizardMedia\VarnishWarmer\Model\VarnishActionManager" />
     <!--End of preference section-->
 
     <!--Constructor argument injection section-->
     <type name="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlPurger">
         <arguments>
-            <argument name="logger"
-                      xsi:type="object">LizardMedia\VarnishWarmer\Logger\PurgeLogger</argument>
+            <argument name="logger" xsi:type="object">LizardMedia\VarnishWarmer\Logger\VirtualPurgeLogger</argument>
         </arguments>
     </type>
 
     <type name="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator">
         <arguments>
-            <argument name="logger"
-                      xsi:type="object">LizardMedia\VarnishWarmer\Logger\RegenerationLogger</argument>
+            <argument name="logger" xsi:type="object">LizardMedia\VarnishWarmer\Logger\VirtualRegenerationLogger</argument>
         </arguments>
     </type>
     <!--End of constructor argument injection section-->
 
     <!--Loggers and handlers section-->
-    <type name="LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler">
+    <virtualType name="LizardMedia\VarnishWarmer\Logger\Handler\VirtualPurgeHandler"
+                 type="Magento\Framework\Logger\Handler\Base">
         <arguments>
-            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+            <argument name="fileName" xsi:type="string">var/log/varnish/purge.log</argument>
         </arguments>
-    </type>
-    <type name="LizardMedia\VarnishWarmer\Logger\PurgeLogger">
+    </virtualType>
+
+    <virtualType name="LizardMedia\VarnishWarmer\Logger\Handler\VirtualErrorHandler"
+                 type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">var/log/varnish/error.log</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="LizardMedia\VarnishWarmer\Logger\Handler\VirtualRegenerationHandler"
+                 type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">var/log/varnish/regeneration.log</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="LizardMedia\VarnishWarmer\Logger\VirtualPurgeLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="name" xsi:type="string">cachePurgeLogger</argument>
-            <argument name="handlers"  xsi:type="array">
-                <item name="debug" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\PurgeHandler</item>
-                <item name="error" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\ErrorHandler</item>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\VirtualPurgeHandler</item>
+                <item name="error" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\VirtualErrorHandler</item>
             </argument>
         </arguments>
-    </type>
+    </virtualType>
 
-    <type name="LizardMedia\VarnishWarmer\Logger\Handler\RegenerationHandler">
+    <virtualType name="LizardMedia\VarnishWarmer\Logger\VirtualRegenerationLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
-            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
-        </arguments>
-    </type>
-    <type name="LizardMedia\VarnishWarmer\Logger\RegenerationLogger">
-        <arguments>
-            <argument name="name" xsi:type="string">cacheRegenerationLogger</argument>
-            <argument name="handlers"  xsi:type="array">
-                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\RegenerationHandler</item>
+            <argument name="name" xsi:type="string">cachePurgeLogger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">LizardMedia\VarnishWarmer\Logger\Handler\VirtualRegenerationHandler</item>
             </argument>
         </arguments>
-    </type>
+    </virtualType>
     <!--End of loggers and handlers section-->
 
 </config>

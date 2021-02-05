@@ -4,6 +4,12 @@
 @copyright Copyright (C) 2019 Lizard Media (http://lizardmedia.pl)
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="LizardMedia_VarnishWarmer">
+    <module name="LizardMedia_VarnishWarmer" setup_version="2.3.1">
+        <sequence>
+            <module name="Magento_Backend"/>
+            <module name="Magento_Catalog"/>
+            <module name="Magento_Config"/>
+            <module name="Magento_Store"/>
+        </sequence>
     </module>
 </config>

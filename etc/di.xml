@@ -70,6 +70,12 @@
         </arguments>
     </type>
 
+    <type name="LizardMedia\VarnishWarmer\Console\Command\AbstractPurgeCommand">
+        <arguments>
+            <argument name="varnishActionManager" xsi:type="object">LizardMedia\VarnishWarmer\Api\VarnishActionManagerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
     <type name="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator">
         <arguments>
             <argument name="logger" xsi:type="object">LizardMedia\VarnishWarmer\Logger\VirtualRegenerationLogger</argument>

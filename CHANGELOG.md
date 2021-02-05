@@ -14,3 +14,6 @@
 
 ### 2.3 ###
 * support for PHP 7.4
+
+### 2.3.1 ###
+* fix for magento installation bug (lack of using proxy in console command class)

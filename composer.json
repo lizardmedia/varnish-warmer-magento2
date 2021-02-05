@@ -4,7 +4,11 @@
     "require": {
         "php": ">=7.1.0",
         "react/http-client": "^0.5.9",
-        "magento/framework": ">=102.0"
+        "magento/framework": ">=102.0",
+        "magento/module-backend": "*",
+        "magento/module-catalog": "*",
+        "magento/module-config": "*",
+        "magento/module-store": "*"
     },
     "type": "magento2-module",
     "version": "2.3.1",

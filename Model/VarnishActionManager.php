@@ -299,10 +299,18 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function getDefaultStoreViewId(): int
     {
-        $defaultStoreView = $this->storeManager->getStore(self::DEFAULT_FRONTEND_STORE_VIEW_ID);
-        return $defaultStoreView instanceof StoreInterface
-            ? (int) $defaultStoreView->getId()
-            : 1;
+        //wrap to prevent install command issue as store doesnt exist.
+        try {
+            $defaultStoreView = $this->storeManager->getStore(self::DEFAULT_FRONTEND_STORE_VIEW_ID);
+            return $defaultStoreView instanceof StoreInterface
+                ? (int) $defaultStoreView->getId()
+                : 1;
+        } catch(\Magento\Framework\Exception\NoSuchEntityException $e) {
+            
+        }
+        
+        
+        return 1;
     }
 
     /**

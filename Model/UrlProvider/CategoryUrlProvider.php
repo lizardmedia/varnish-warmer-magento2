@@ -64,7 +64,7 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
             ->select()
             ->from(
                 [
-                    'u' => 'url_rewrite'
+                    'u' => $connection->getTableName('url_rewrite')
                 ],
                 'request_path'
             )->where(

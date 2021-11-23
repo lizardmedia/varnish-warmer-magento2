@@ -67,7 +67,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
             ->select()
             ->from(
                 [
-                    'u' => 'url_rewrite'
+                    'u' => $connection->getTableName('url_rewrite')
                 ],
                 'request_path'
             )->where(
@@ -98,7 +98,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
                 ->select()
                 ->from(
                     [
-                        'u' => 'url_rewrite'
+                        'u' => $connection->getTableName('url_rewrite')
                     ],
                     'request_path'
                 )->where(

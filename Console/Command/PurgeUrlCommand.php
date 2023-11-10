@@ -53,13 +53,14 @@ class PurgeUrlCommand extends AbstractPurgeCommand
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return void
+     * @return int
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $url = $input->getArgument(self::URL_ARGUMENT);
         $this->passStoreViewIfSet($input);
         $this->varnishActionManager->purgeAndRegenerateUrl($url);
+        return 0;
     }
 }

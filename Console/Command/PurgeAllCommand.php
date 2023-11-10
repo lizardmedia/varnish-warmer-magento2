@@ -43,12 +43,13 @@ class PurgeAllCommand extends AbstractPurgeCommand
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return void
+     * @return int
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->passStoreViewIfSet($input);
         $this->varnishActionManager->purgeAll();
+        return 0;
     }
 }

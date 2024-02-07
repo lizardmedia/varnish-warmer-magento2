@@ -46,9 +46,10 @@ class PurgeWildcardCommand extends AbstractPurgeCommand
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->passStoreViewIfSet($input);
         $this->varnishActionManager->purgeWildcard();
+        return 0;
     }
 }

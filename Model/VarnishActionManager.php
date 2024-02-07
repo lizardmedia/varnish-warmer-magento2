@@ -295,14 +295,17 @@ class VarnishActionManager implements VarnishActionManagerInterface
 
     /**
      * @return int
-     * @throws NoSuchEntityException
      */
     private function getDefaultStoreViewId(): int
     {
-        $defaultStoreView = $this->storeManager->getStore(self::DEFAULT_FRONTEND_STORE_VIEW_ID);
-        return $defaultStoreView instanceof StoreInterface
-            ? (int) $defaultStoreView->getId()
-            : 1;
+        try {
+            $defaultStoreView = $this->storeManager->getStore(self::DEFAULT_FRONTEND_STORE_VIEW_ID);
+            return $defaultStoreView instanceof StoreInterface
+                ? (int) $defaultStoreView->getId()
+                : 1;
+        } catch(NoSuchEntityException $exception) {
+            return 1;
+        }
     }
 
     /**

@@ -127,6 +127,7 @@ abstract class AbstractQueueHandler
      */
     protected function log(string $url, ?int $code = null, ?array $headers = []): void
     {
+        unset($headers['Set-Cookie']);
         $context = ['url' => $url, 'code' => $code, 'headers' => implode(',', $headers)];
 
         $this->logger->debug(

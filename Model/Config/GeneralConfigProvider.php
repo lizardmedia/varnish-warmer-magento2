@@ -25,6 +25,7 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
      */
     private const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish/general/max_concurrent_regeneration';
     private const XML_PATH_CONCURRENT_PURGE = 'lm_varnish/general/max_concurrent_purge';
+    private const XML_PATH_EXCLUDE_301_REDIRECTS = 'lm_varnish/general/exclude_301_redirects';
 
     /**
      * @var int
@@ -92,5 +93,13 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
     protected function isMaxPurgeProcessesConfigValid(int $configValue): bool
     {
         return $configValue >= self::PURGE_PROCESSES_MIN && $configValue <= self::PURGE_PROCESSES_MAX;
+    }
+
+    /**
+     * @return bool
+     */
+    public function exclude301Redirects(): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_EXCLUDE_301_REDIRECTS);
     }
 }

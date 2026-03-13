@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace LizardMedia\VarnishWarmer\Model\UrlProvider;
 
+use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\UrlProvider\ProductUrlProviderInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -39,17 +40,25 @@ class ProductUrlProvider implements ProductUrlProviderInterface
     protected $resourceConnectionFactory;
 
     /**
+     * @var GeneralConfigProviderInterface
+     */
+    private $generalConfigProvider;
+
+    /**
      * ProductUrlProvider constructor.
      * @param ProductCollectionFactory $productCollectionFactory
      * @param ResourceConnectionFactory $resourceConnectionFactory
+     * @param GeneralConfigProviderInterface $generalConfigProvider
      * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
-        ResourceConnectionFactory $resourceConnectionFactory
+        ResourceConnectionFactory $resourceConnectionFactory,
+        GeneralConfigProviderInterface $generalConfigProvider
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->resourceConnectionFactory = $resourceConnectionFactory;
+        $this->generalConfigProvider = $generalConfigProvider;
     }
 
     /**
@@ -77,6 +86,10 @@ class ProductUrlProvider implements ProductUrlProviderInterface
                 'u.entity_id=?',
                 $productId
             );
+
+        if ($this->generalConfigProvider->exclude301Redirects()) {
+            $select->where('u.redirect_type = ?', 0);
+        }
 
         return $conn->fetchAll($select);
     }
@@ -107,6 +120,10 @@ class ProductUrlProvider implements ProductUrlProviderInterface
                 )->where(
                     'u.entity_id IN (' . implode(',', $productIds) . ')'
                 );
+
+            if ($this->generalConfigProvider->exclude301Redirects()) {
+                $select->where('u.redirect_type = ?', 0);
+            }
 
             $rewrites = $conn->fetchAll($select);
         }

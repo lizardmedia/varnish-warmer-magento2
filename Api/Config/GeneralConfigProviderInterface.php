@@ -23,4 +23,9 @@ interface GeneralConfigProviderInterface
      * @return int
      */
     public function getMaxConcurrentPurgeProcesses(): int;
+
+    /**
+     * @return bool
+     */
+    public function exclude301Redirects(): bool;
 }

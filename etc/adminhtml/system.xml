@@ -20,6 +20,10 @@
                 <field id="max_concurrent_purge" type="text" showInDefault="1" translate="label">
                     <label>Number of concurrent purge processes</label>
                 </field>
+                <field id="exclude_301_redirects" type="select" showInDefault="1" translate="label" canRestore="1">
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <label>Exclude 301 Redirects from Cache Warming</label>
+                </field>
             </group>
             <group id="purge" showInDefault="1" translate="label">
                 <label>Purging</label>

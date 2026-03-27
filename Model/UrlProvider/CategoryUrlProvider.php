@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace LizardMedia\VarnishWarmer\Model\UrlProvider;
 
+use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\UrlProvider\CategoryUrlProviderInterface;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
@@ -36,17 +37,25 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
     protected $resourceConnectionFactory;
 
     /**
+     * @var GeneralConfigProviderInterface
+     */
+    private $generalConfigProvider;
+
+    /**
      * CategoryUrlProvider constructor.
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param ResourceConnectionFactory $resourceConnectionFactory
+     * @param GeneralConfigProviderInterface $generalConfigProvider
      * @SuppressWarnings(PHPMD.LongVariable)
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
-        ResourceConnectionFactory $resourceConnectionFactory
+        ResourceConnectionFactory $resourceConnectionFactory,
+        GeneralConfigProviderInterface $generalConfigProvider
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->resourceConnectionFactory = $resourceConnectionFactory;
+        $this->generalConfigProvider = $generalConfigProvider;
     }
 
     /**
@@ -73,6 +82,11 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
             )->where(
                 'u.entity_id IN (' . implode(',', $categoryIds) . ')'
             );
+
+        if ($this->generalConfigProvider->exclude301Redirects()) {
+            $select->where('u.redirect_type = ?', 0);
+        }
+
         return $conn->fetchAll($select);
     }
 

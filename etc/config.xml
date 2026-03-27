@@ -9,6 +9,7 @@
             <general>
                 <max_concurrent_regeneration>10</max_concurrent_regeneration>
                 <max_concurrent_purge>4</max_concurrent_purge>
+                <exclude_301_redirects>1</exclude_301_redirects>
             </general>
         </lm_varnish>
     </default>

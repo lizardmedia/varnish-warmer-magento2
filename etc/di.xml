@@ -29,6 +29,13 @@
     <!--End of console commands section-->
 
     <!--Preference section-->
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="lm_varnish/general/http_auth_password" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
     <preference for="LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface"
                 type="LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator" />
 

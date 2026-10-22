@@ -24,11 +24,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <label>Exclude 301 Redirects from Cache Warming</label>
                 </field>
-                <field id="http_auth_username" type="text" showInDefault="1" translate="label comment">
+                <field id="http_auth_username" type="LizardMedia\VarnishWarmer\Block\Adminhtml\Form\Element\TextWithoutAutofill" showInDefault="1" translate="label comment">
                     <label>HTTP authentication username</label>
                     <comment>Fill in when the store is behind HTTP basic authentication, e.g. on staging</comment>
                 </field>
-                <field id="http_auth_password" type="obscure" showInDefault="1" translate="label">
+                <field id="http_auth_password" type="LizardMedia\VarnishWarmer\Block\Adminhtml\Form\Element\ObscureWithoutAutofill" showInDefault="1" translate="label">
                     <label>HTTP authentication password</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>

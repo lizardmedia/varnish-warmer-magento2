@@ -69,6 +69,18 @@ final class VarnishUrlPurgerTest extends TestCase
         }
     }
 
+    public function testLogsRepeatedResponseHeadersAsText(): void
+    {
+        $this->server = RecordingServer::start();
+        $purger = $this->createPurger(4);
+        $url = $this->server->url('women.html');
+
+        $purger->addUrlToPurge($url);
+        $purger->purge();
+
+        self::assertStringContainsString('first, second', $this->loggedResponseHeaders($url));
+    }
+
     public function testSendsConfiguredHostHeaderWhenCustomPurgeHostIsEnabled(): void
     {
         $this->customPurgeHostEnabled = true;
@@ -158,6 +170,17 @@ final class VarnishUrlPurgerTest extends TestCase
         foreach ($this->logRecords->getRecords() as $record) {
             if (($record['context']['url'] ?? null) === $url) {
                 return $record['context']['code'] ?? null;
+            }
+        }
+
+        self::fail('Nothing was logged for ' . $url);
+    }
+
+    private function loggedResponseHeaders(string $url): string
+    {
+        foreach ($this->logRecords->getRecords() as $record) {
+            if (($record['context']['url'] ?? null) === $url) {
+                return (string) ($record['context']['headers'] ?? '');
             }
         }
 

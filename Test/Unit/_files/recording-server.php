@@ -82,7 +82,8 @@ while (true) {
         if ($dueAt > microtime(true)) {
             continue;
         }
-        fwrite($clients[$clientId], "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK");
+        fwrite($clients[$clientId], "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nX-Repeated: first\r\nX-Repeated: second\r\n"
+            . "Content-Length: 2\r\nConnection: close\r\n\r\nOK");
         fclose($clients[$clientId]);
         unset($clients[$clientId], $buffers[$clientId], $responseDueAt[$clientId]);
     }

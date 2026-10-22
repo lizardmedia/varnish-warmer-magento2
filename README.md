@@ -103,7 +103,8 @@ php bin/magento lm-varnish:cache-refresh-url "*" --store=1
   e.g. on staging
 * Purging
   * Enable purging - set to No when Magento already invalidates Varnish by cache tags and the module should
-  only warm the cache
+  only warm the cache. Set it to No as well without Varnish: warming fills Magento's built-in full page cache
+  the same way, since it also keeps a separate entry per ``X-Magento-Vary`` cookie
   * custom purge hosts (comma separated, one per Varnish server) and the Host header sent with them
 
 ### Cache variants

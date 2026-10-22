@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="Test/bootstrap.php"
+         cacheDirectory=".phpunit.cache"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+    <testsuites>
+        <testsuite name="unit">
+            <directory>Test/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <groups>
+        <exclude>
+            <group>known-bug</group>
+        </exclude>
+    </groups>
+    <source>
+        <include>
+            <directory>Api</directory>
+            <directory>Block</directory>
+            <directory>Console</directory>
+            <directory>Controller</directory>
+            <directory>Model</directory>
+        </include>
+    </source>
+</phpunit>

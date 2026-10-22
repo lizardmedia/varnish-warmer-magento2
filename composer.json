@@ -10,6 +10,9 @@
         "magento/module-config": "*",
         "magento/module-store": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.5 || ^12.0"
+    },
     "type": "magento2-module",
     "version": "2.3.3",
     "license": [
@@ -18,9 +21,14 @@
     "repositories": [
         {
             "type": "composer",
-            "url": "https://repo.magento.com/"
+            "url": "https://mirror.mage-os.org/"
         }
     ],
+    "config": {
+        "allow-plugins": {
+            "magento/*": false
+        }
+    },
     "autoload": {
         "files": [
             "registration.php"

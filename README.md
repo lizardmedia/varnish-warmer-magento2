@@ -79,7 +79,7 @@ The commands can be run using Magento built-in CLI:
 * ``lm-varnish:cache-purge-wildcard`` - purges * and regenerates homepage, categories and products
 * ``lm-varnish:cache-purge-all`` - purges and regenerates homepage, categories and products
 * ``lm-varnish:cache-purge-force`` - purges * without regenerating. Omits lock check
-* ``lm-varnish:cache-purge-products`` - purges and regenerates products 
+* ``lm-varnish:regenerate-products-cache`` - purges and regenerates products
 * ``lm-varnish:cache-refresh-url`` - purges and regenerates single URL given as argument
 
 ## Command options ##
@@ -94,6 +94,20 @@ The number of process used for purging and regenerating Varnish cache can be cus
 in the admin panel. The max number of processes is specified in 
 ``LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider``
 If you have a powerful server you can modify those numbers to use more resources.
+
+### Tests
+
+CI runs the suite against whole Magento releases the projects use (see ``.github/workflows/tests.yml``).
+To do the same locally, pin a release and install (do not commit the resulting ``composer.json`` change):
+```
+composer config policy.advisories.block false
+composer require --no-update magento/product-community-edition:2.4.6-p15
+composer update
+```
+
+* ``vendor/bin/phpunit`` runs the contract tests: behaviour that must not change between releases.
+* ``vendor/bin/phpunit --group known-bug`` runs tests describing known defects. They fail until the
+defect is fixed, and the fix removes the test from the ``known-bug`` group.
 
 ## Contributing
 

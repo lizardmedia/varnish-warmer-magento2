@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: PHP ${{ matrix.php }}, Magento ${{ matrix.magento }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.1'
+            magento: '2.4.6-p15'
+          - php: '8.2'
+            magento: '2.4.6-p15'
+          - php: '8.3'
+            magento: '2.4.7-p10'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: bcmath, ctype, curl, dom, gd, iconv, intl, mbstring, openssl, pdo_mysql, simplexml, soap, sodium, xsl, zip
+          coverage: none
+
+      - name: Pin all Magento packages to the release projects run, including its known advisories
+        run: |
+          composer config policy.advisories.block false
+          composer config audit.block-insecure false
+          composer require --no-update --no-interaction magento/product-community-edition:${{ matrix.magento }}
+
+      - uses: ramsey/composer-install@v3
+
+      - run: vendor/bin/phpunit

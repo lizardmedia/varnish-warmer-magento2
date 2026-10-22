@@ -12,14 +12,13 @@ namespace LizardMedia\VarnishWarmer\Test\Unit\Model\QueueHandler;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
-use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory as ReactClientFactory;
+use LizardMedia\VarnishWarmer\Model\Adapter\Guzzle\ClientFactory;
 use LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlPurger;
 use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Factory as ReactLoopFactory;
 
 final class VarnishUrlPurgerTest extends TestCase
 {
@@ -27,6 +26,8 @@ final class VarnishUrlPurgerTest extends TestCase
     private TestHandler $logRecords;
     private bool $customPurgeHostEnabled = false;
     private string $hostForHeader = '';
+    private string $httpAuthUsername = '';
+    private string $httpAuthPassword = '';
 
     protected function tearDown(): void
     {
@@ -48,6 +49,7 @@ final class VarnishUrlPurgerTest extends TestCase
             self::assertSame('PURGE', $request['method']);
             self::assertSame('.*', $request['headers']['x-magento-tags-pattern'] ?? null);
             self::assertSame($this->server->hostHeader(), $request['headers']['host'] ?? null);
+            self::assertArrayNotHasKey('authorization', $request['headers']);
         }
     }
 
@@ -78,6 +80,22 @@ final class VarnishUrlPurgerTest extends TestCase
         $purger->purge();
 
         self::assertSame('shop.test', $this->server->requests()[0]['headers']['host'] ?? null);
+    }
+
+    public function testAuthenticatesWhenHttpAuthenticationIsConfigured(): void
+    {
+        $this->httpAuthUsername = 'stage';
+        $this->httpAuthPassword = 'secret';
+        $this->server = RecordingServer::start();
+        $purger = $this->createPurger(4);
+
+        $purger->addUrlToPurge($this->server->url('women.html'));
+        $purger->purge();
+
+        self::assertSame(
+            'Basic ' . base64_encode('stage:secret'),
+            $this->server->requests()[0]['headers']['authorization'] ?? null
+        );
     }
 
     public function testKeepsNumberOfParallelRequestsWithinConfiguredLimit(): void
@@ -115,8 +133,11 @@ final class VarnishUrlPurgerTest extends TestCase
     {
         $generalConfig = $this->createStub(GeneralConfigProviderInterface::class);
         $generalConfig->method('getMaxConcurrentPurgeProcesses')->willReturn($maxParallelRequests);
+        $generalConfig->method('getHttpAuthUsername')->willReturnCallback(fn (): string => $this->httpAuthUsername);
+        $generalConfig->method('getHttpAuthPassword')->willReturnCallback(fn (): string => $this->httpAuthPassword);
 
         $purgingConfig = $this->createStub(PurgingConfigProviderInterface::class);
+        $purgingConfig->method('isPurgeEnabled')->willReturn(true);
         $purgingConfig->method('isPurgeCustomHostEnabled')->willReturnCallback(fn (): bool => $this->customPurgeHostEnabled);
         $purgingConfig->method('getAdditionalHostForHeader')->willReturnCallback(fn (): string => $this->hostForHeader);
         $purgingConfig->method('getCustomPurgeHosts')->willReturn([]);
@@ -128,8 +149,7 @@ final class VarnishUrlPurgerTest extends TestCase
             PurgingConfigProviderInterface::class => $purgingConfig,
             LoggerInterface::class => new Logger('varnish-warmer-test', [$this->logRecords]),
             QueueProgressLoggerInterface::class => $this->createStub(QueueProgressLoggerInterface::class),
-            ReactLoopFactory::class => static fn (): ReactLoopFactory => new ReactLoopFactory(),
-            ReactClientFactory::class => static fn (): ReactClientFactory => new ReactClientFactory(),
+            ClientFactory::class => new ClientFactory($generalConfig),
         ]);
     }
 

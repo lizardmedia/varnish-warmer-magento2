@@ -24,3 +24,8 @@
 "Custom host","Custom host"
 "Additional host address for purge request header","Additional host address for purge request header"
 "If you need to purge multiple URLs (multiple Varnish servers) split the urls with a comma","If you need to purge multiple URLs (multiple Varnish servers) split the urls with a comma"
+"Enable purging","Enable purging"
+"Set to No when Magento already invalidates Varnish by cache tags and this module should only warm the cache","Set to No when Magento already invalidates Varnish by cache tags and this module should only warm the cache"
+"HTTP authentication username","HTTP authentication username"
+"Fill in when the store is behind HTTP basic authentication, e.g. on staging","Fill in when the store is behind HTTP basic authentication, e.g. on staging"
+"HTTP authentication password","HTTP authentication password"

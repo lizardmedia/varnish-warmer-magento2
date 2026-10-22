@@ -78,7 +78,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
                 [
                     'u' => $connection->getTableName('url_rewrite')
                 ],
-                'request_path'
+                ['request_path', 'store_id']
             )->where(
                 'u.entity_type=?',
                 'product'
@@ -113,7 +113,7 @@ class ProductUrlProvider implements ProductUrlProviderInterface
                     [
                         'u' => $connection->getTableName('url_rewrite')
                     ],
-                    'request_path'
+                    ['request_path', 'store_id']
                 )->where(
                     'u.entity_type=?',
                     'product'

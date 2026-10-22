@@ -11,20 +11,21 @@ namespace LizardMedia\VarnishWarmer\Test\Unit\Model\QueueHandler;
 
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
-use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory as ReactClientFactory;
+use LizardMedia\VarnishWarmer\Model\Adapter\Guzzle\ClientFactory;
+use LizardMedia\VarnishWarmer\Model\HttpContext\VaryCookieProvider;
 use LizardMedia\VarnishWarmer\Model\QueueHandler\VarnishUrlRegenerator;
 use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Factory as ReactLoopFactory;
 
 final class VarnishUrlRegeneratorTest extends TestCase
 {
     private ?RecordingServer $server = null;
     private TestHandler $logRecords;
+    private array $varyCookiesByStoreId = [];
+    private string $httpAuthUsername = '';
 
     protected function tearDown(): void
     {
@@ -45,8 +46,26 @@ final class VarnishUrlRegeneratorTest extends TestCase
         foreach ($requests as $request) {
             self::assertSame('GET', $request['method']);
             self::assertArrayNotHasKey('x-magento-tags-pattern', $request['headers']);
+            self::assertArrayNotHasKey('cookie', $request['headers']);
             self::assertSame($this->server->hostHeader(), $request['headers']['host'] ?? null);
         }
+    }
+
+    public function testWarmsEveryCacheVariantGuestsOfTheStoreViewGet(): void
+    {
+        $this->varyCookiesByStoreId = [2 => [null, 'en-store-hash']];
+        $this->server = RecordingServer::start();
+        $regenerator = $this->createRegenerator(4);
+
+        $regenerator->addUrlToRegenerate($this->server->url('women.html'), 2);
+        $regenerator->regenerate();
+
+        $requests = $this->server->requests();
+        self::assertSame(['/women.html', '/women.html'], array_column($requests, 'target'));
+        self::assertEqualsCanonicalizing(
+            [null, 'X-Magento-Vary=en-store-hash'],
+            array_map(static fn (array $request): ?string => $request['headers']['cookie'] ?? null, $requests)
+        );
     }
 
     public function testLogsEveryRegeneratedUrl(): void
@@ -61,6 +80,39 @@ final class VarnishUrlRegeneratorTest extends TestCase
         $regenerator->regenerate();
 
         self::assertEqualsCanonicalizing($urls, $this->loggedUrls());
+    }
+
+    public function testLogsResponseCodeOfEveryRegeneratedUrl(): void
+    {
+        $this->server = RecordingServer::start();
+        $regenerator = $this->createRegenerator(4);
+
+        $regenerator->addUrlToRegenerate($this->server->url('women.html'));
+        $regenerator->regenerate();
+
+        $codes = array_map(
+            static fn ($record) => $record['context']['code'] ?? null,
+            array_filter(
+                $this->logRecords->getRecords(),
+                static fn ($record): bool => isset($record['context']['url'])
+            )
+        );
+        self::assertSame([200], array_values($codes));
+    }
+
+    public function testAuthenticatesWhenHttpAuthenticationIsConfigured(): void
+    {
+        $this->httpAuthUsername = 'stage';
+        $this->server = RecordingServer::start();
+        $regenerator = $this->createRegenerator(4);
+
+        $regenerator->addUrlToRegenerate($this->server->url('women.html'));
+        $regenerator->regenerate();
+
+        self::assertSame(
+            'Basic ' . base64_encode('stage:secret'),
+            $this->server->requests()[0]['headers']['authorization'] ?? null
+        );
     }
 
     public function testKeepsNumberOfParallelRequestsWithinConfiguredLimit(): void
@@ -94,29 +146,31 @@ final class VarnishUrlRegeneratorTest extends TestCase
         self::assertSame(['/men.html'], array_column($this->server->requests(), 'target'));
     }
 
-    #[Group('known-bug')]
-    public function testLogsResponseCodeOfEveryRegeneratedUrl(): void
+    public function testGivesUpOnResponseThatTakesLongerThanTimeout(): void
     {
-        $this->server = RecordingServer::start();
-        $regenerator = $this->createRegenerator(4);
+        $this->server = RecordingServer::start(3000);
+        $regenerator = $this->createRegenerator(4, 0.5);
+        $slowUrl = $this->server->url('slow.html');
 
-        $regenerator->addUrlToRegenerate($this->server->url('women.html'));
+        $startedAt = microtime(true);
+        $regenerator->addUrlToRegenerate($slowUrl);
         $regenerator->regenerate();
 
-        $codes = array_map(
-            static fn ($record) => $record['context']['code'] ?? null,
-            array_filter(
-                $this->logRecords->getRecords(),
-                static fn ($record): bool => isset($record['context']['url'])
-            )
-        );
-        self::assertSame([200], array_values($codes));
+        self::assertLessThan(2.5, microtime(true) - $startedAt);
+        self::assertTrue($this->hasErrorAbout($slowUrl));
     }
 
-    private function createRegenerator(int $maxParallelRequests): VarnishUrlRegenerator
+    private function createRegenerator(int $maxParallelRequests, float $timeoutSeconds = 60.0): VarnishUrlRegenerator
     {
         $generalConfig = $this->createStub(GeneralConfigProviderInterface::class);
         $generalConfig->method('getMaxConcurrentRegenerationProcesses')->willReturn($maxParallelRequests);
+        $generalConfig->method('getHttpAuthUsername')->willReturnCallback(fn (): string => $this->httpAuthUsername);
+        $generalConfig->method('getHttpAuthPassword')->willReturn('secret');
+
+        $varyCookieProvider = $this->createStub(VaryCookieProvider::class);
+        $varyCookieProvider->method('getVaryCookies')->willReturnCallback(
+            fn (int $storeId): array => $this->varyCookiesByStoreId[$storeId] ?? [null]
+        );
 
         $this->logRecords = new TestHandler();
 
@@ -124,8 +178,8 @@ final class VarnishUrlRegeneratorTest extends TestCase
             GeneralConfigProviderInterface::class => $generalConfig,
             LoggerInterface::class => new Logger('varnish-warmer-test', [$this->logRecords]),
             QueueProgressLoggerInterface::class => $this->createStub(QueueProgressLoggerInterface::class),
-            ReactLoopFactory::class => static fn (): ReactLoopFactory => new ReactLoopFactory(),
-            ReactClientFactory::class => static fn (): ReactClientFactory => new ReactClientFactory(),
+            ClientFactory::class => new ClientFactory($generalConfig, 1.0, $timeoutSeconds),
+            VaryCookieProvider::class => $varyCookieProvider,
         ]);
     }
 

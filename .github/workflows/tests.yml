@@ -18,6 +18,10 @@ jobs:
             magento: '2.4.6-p15'
           - php: '8.3'
             magento: '2.4.7-p10'
+          - php: '8.4'
+            magento: '2.4.9'
+          - php: '8.5'
+            magento: '2.4.9'
     steps:
       - uses: actions/checkout@v4
 

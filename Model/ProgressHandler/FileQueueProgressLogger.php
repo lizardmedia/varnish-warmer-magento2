@@ -16,7 +16,7 @@ use LizardMedia\VarnishWarmer\Api\ProgressHandler\ProgressDataInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem\Io\File;
-use Zend\Json\Json;
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * Class FileQueueProgressLogger
@@ -50,21 +50,26 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
      */
     private $progressDataFactory;
 
+    private Json $serializer;
+
     /**
      * FileLock constructor.
      * @param DirectoryList $directoryList
      * @param File $fileHandler
      * @param ProgressDataFactory $progressDataFactory
+     * @param Json $serializer
      */
     public function __construct(
         DirectoryList $directoryList,
         File $fileHandler,
-        ProgressDataFactory $progressDataFactory
+        ProgressDataFactory $progressDataFactory,
+        Json $serializer
     ) {
         $this->logDir = $directoryList->getRoot() . self::LOG_DIR;
         $this->logFile = $directoryList->getRoot() . self::LOG_DIR . self::LOG_FILE;
         $this->fileHandler = $fileHandler;
         $this->progressDataFactory = $progressDataFactory;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -89,7 +94,8 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
     public function getProgressData(): ProgressDataInterface
     {
         $loggedData = $this->fileHandler->read($this->logFile);
-        return $this->retrieveLogData($loggedData);
+
+        return $this->retrieveLogData(is_string($loggedData) ? $loggedData : '');
     }
 
     /**
@@ -100,7 +106,7 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
      */
     private function prepareDataToLog(string $type, int $current, int $total): string
     {
-        return Json::encode(
+        return $this->serializer->serialize(
             [
                 ProgressDataInterface::FIELD_PROCESS_TYPE => $type,
                 ProgressDataInterface::FIELD_CURRENT => $current,
@@ -118,7 +124,7 @@ class FileQueueProgressLogger implements QueueProgressLoggerInterface
         /** @var ProgressData $progressData */
         $progressData = $this->progressDataFactory->create();
         try {
-            $loggedDataArray = Json::decode($loggedData, Json::TYPE_ARRAY);
+            $loggedDataArray = $this->serializer->unserialize($loggedData);
             $progressData->addData($loggedDataArray);
         } catch (Exception $e) {
         }

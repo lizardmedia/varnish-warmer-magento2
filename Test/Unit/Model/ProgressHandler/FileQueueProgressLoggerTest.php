@@ -16,7 +16,6 @@ use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Serialize\Serializer\Json;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -35,7 +34,6 @@ final class FileQueueProgressLoggerTest extends TestCase
         File::rmdirRecursive($this->magentoRoot);
     }
 
-    #[Group('known-bug')]
     public function testReadsBackLoggedProgress(): void
     {
         $progressLogger = $this->createProgressLogger();
@@ -49,7 +47,6 @@ final class FileQueueProgressLoggerTest extends TestCase
         self::assertSame(10, $progressData->getTotal());
     }
 
-    #[Group('known-bug')]
     public function testReturnsEmptyProgressWhenProgressLogIsCorrupted(): void
     {
         mkdir($this->magentoRoot . '/var/log/varnish', 0777, true);
@@ -58,7 +55,6 @@ final class FileQueueProgressLoggerTest extends TestCase
         self::assertNull($this->createProgressLogger()->getProgressData()->getCurrent());
     }
 
-    #[Group('known-bug')]
     public function testReturnsEmptyProgressBeforeAnythingWasLogged(): void
     {
         self::assertNull($this->createProgressLogger()->getProgressData()->getCurrent());

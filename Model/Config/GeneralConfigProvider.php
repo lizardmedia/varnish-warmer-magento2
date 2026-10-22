@@ -13,6 +13,7 @@ namespace LizardMedia\VarnishWarmer\Model\Config;
 
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 /**
  * Class GeneralConfigProvider
@@ -26,6 +27,8 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
     private const XML_PATH_CONCURRENT_REGENERATION = 'lm_varnish/general/max_concurrent_regeneration';
     private const XML_PATH_CONCURRENT_PURGE = 'lm_varnish/general/max_concurrent_purge';
     private const XML_PATH_EXCLUDE_301_REDIRECTS = 'lm_varnish/general/exclude_301_redirects';
+    private const XML_PATH_HTTP_AUTH_USERNAME = 'lm_varnish/general/http_auth_username';
+    private const XML_PATH_HTTP_AUTH_PASSWORD = 'lm_varnish/general/http_auth_password';
 
     /**
      * @var int
@@ -46,13 +49,22 @@ class GeneralConfigProvider implements GeneralConfigProviderInterface
      */
     private $scopeConfig;
 
-    /**
-     * GeneralConfigProvider constructor.
-     * @param ScopeConfigInterface $scopeConfig
-     */
-    public function __construct(ScopeConfigInterface $scopeConfig)
+    private EncryptorInterface $encryptor;
+
+    public function __construct(ScopeConfigInterface $scopeConfig, EncryptorInterface $encryptor)
     {
         $this->scopeConfig = $scopeConfig;
+        $this->encryptor = $encryptor;
+    }
+
+    public function getHttpAuthUsername(): string
+    {
+        return (string) $this->scopeConfig->getValue(self::XML_PATH_HTTP_AUTH_USERNAME);
+    }
+
+    public function getHttpAuthPassword(): string
+    {
+        return $this->encryptor->decrypt((string) $this->scopeConfig->getValue(self::XML_PATH_HTTP_AUTH_PASSWORD));
     }
 
     /**

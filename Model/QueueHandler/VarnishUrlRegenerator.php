@@ -12,10 +12,16 @@ declare(strict_types=1);
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
-use Exception;
+use GuzzleHttp\Psr7\Request;
+use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
+use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlRegeneratorInterface;
-use React\HttpClient\Response;
-use RuntimeException;
+use LizardMedia\VarnishWarmer\Model\Adapter\Guzzle\ClientFactory;
+use LizardMedia\VarnishWarmer\Model\HttpContext\VaryCookieProvider;
+use Magento\Framework\App\Response\Http as HttpResponse;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class VarnishUrlRegenerator
@@ -28,14 +34,27 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
      */
     private const PROCESS_TYPE = 'REGENERATE';
 
-    /**
-     * @param string $url
-     * @return void
-     */
-    public function addUrlToRegenerate(string $url): void
+    private VaryCookieProvider $varyCookieProvider;
+
+    public function __construct(
+        GeneralConfigProviderInterface $configProvider,
+        LoggerInterface $logger,
+        QueueProgressLoggerInterface $queueProgressLogger,
+        ClientFactory $clientFactory,
+        VaryCookieProvider $varyCookieProvider
+    ) {
+        parent::__construct($configProvider, $logger, $queueProgressLogger, $clientFactory);
+        $this->varyCookieProvider = $varyCookieProvider;
+    }
+
+    public function addUrlToRegenerate(string $url, ?int $storeId = null): void
     {
-        $this->urls[] = $url;
-        $this->total++;
+        $varyCookies = $storeId === null ? [null] : $this->varyCookieProvider->getVaryCookies($storeId);
+
+        foreach ($varyCookies as $varyCookie) {
+            $headers = $varyCookie === null ? [] : ['Cookie' => HttpResponse::COOKIE_VARY_STRING . '=' . $varyCookie];
+            $this->queue(new Request('GET', $url, $headers));
+        }
     }
 
     /**
@@ -62,39 +81,10 @@ class VarnishUrlRegenerator extends AbstractQueueHandler implements VarnishUrlRe
         return self::PROCESS_TYPE;
     }
 
-    /**
-     * @param string $url
-     * @return void
-     */
-    protected function createRequest(string $url): void
+    protected function handleResponse(RequestInterface $request, ResponseInterface $response): void
     {
-        $client = $this->clientFactory->create($this->loop);
-        $request = $client->request('GET', $url);
-
-        $request->on('error', function (RuntimeException $exception) use ($url) {
-            $this->logger->error($exception->getMessage(), [$url]);
-        });
-
-        $request->on('response', function (Response $response) use ($url) {
-            $response->on(
-                'end',
-                function () use ($url){
-                    $this->counter++;
-                    $this->log($url);
-                    $this->logProgress();
-                }
-            );
-
-            $response->on('error', function (Exception $exception) use ($url) {
-                $this->logger->error(
-                    $exception->getMessage(),
-                    [
-                        'url' => $url
-                    ]
-                );
-            });
-        });
-
-        $request->end();
+        $this->counter++;
+        $this->log($request, $response);
+        $this->logProgress();
     }
 }

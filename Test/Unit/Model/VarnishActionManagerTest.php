@@ -27,7 +27,6 @@ use Magento\Framework\Phrase;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
@@ -39,14 +38,17 @@ final class VarnishActionManagerTest extends TestCase
     private array $events = [];
     private array $purgedUrls = [];
     private array $regeneratedUrls = [];
+    private array $regenerationStoreIds = [];
     private bool $locked = false;
     private array $secureBaseUrls = [1 => self::BASE_URL];
     private array $storeCodes = [1 => 'default', 2 => 'en', 3 => 'de'];
     private bool $storeCodeInUrlGlobally = false;
     private array $storeCodeInUrlForStoreIds = [];
+    private bool $purgeEnabled = true;
     private bool $customPurgeHostsEnabled = false;
     private array $customPurgeHosts = [];
     private ?Throwable $categoryUrlsFailure = null;
+    private array $categoryUrls = [['request_path' => 'women.html'], ['request_path' => 'men.html']];
 
     public function testPurgeHomepagePurgesAndRegeneratesHomepageUnderLock(): void
     {
@@ -191,7 +193,71 @@ final class VarnishActionManagerTest extends TestCase
         self::assertSame('2026-10-22 10:15:00', $manager->getLockMessage());
     }
 
-    #[Group('known-bug')]
+    public function testOnlyRegeneratesWhenPurgingIsDisabled(): void
+    {
+        $this->purgeEnabled = false;
+
+        $this->createManager()->purgeAll();
+
+        $this->assertPurged([]);
+        $this->assertRegenerated([
+            self::BASE_URL,
+            self::BASE_URL . 'women.html',
+            self::BASE_URL . 'men.html',
+            self::BASE_URL . 'shirt.html',
+        ]);
+        $this->assertRanUnderLock();
+    }
+
+    public function testOnlyRegeneratesSingleUrlWhenPurgingIsDisabled(): void
+    {
+        $this->purgeEnabled = false;
+
+        $this->createManager()->purgeAndRegenerateUrl('bizuteria');
+
+        $this->assertPurged([]);
+        $this->assertRegenerated([self::BASE_URL . 'bizuteria']);
+    }
+
+    public function testUsesOnlyUrlRewritesOfSelectedStoreView(): void
+    {
+        $this->secureBaseUrls[2] = 'https://shop.test/en/';
+        $this->categoryUrls = [
+            ['request_path' => 'kobiety.html', 'store_id' => '1'],
+            ['request_path' => 'women.html', 'store_id' => '2'],
+        ];
+        $manager = $this->createManager();
+
+        $manager->setStoreViewId(2);
+        $manager->purgeGeneral();
+
+        $this->assertPurged(['https://shop.test/en/', 'https://shop.test/en/women.html']);
+        $this->assertRegenerated(['https://shop.test/en/', 'https://shop.test/en/women.html']);
+    }
+
+    public function testSwitchingStoreViewOnSameInstanceUsesBaseUrlOfNewStoreView(): void
+    {
+        $this->secureBaseUrls[3] = 'https://shop.de/';
+        $manager = $this->createManager();
+
+        $manager->purgeAndRegenerateUrl('bizuteria');
+        $manager->setStoreViewId(3);
+        $manager->purgeAndRegenerateUrl('schmuck');
+
+        $this->assertRegenerated([self::BASE_URL . 'bizuteria', 'https://shop.de/schmuck']);
+    }
+
+    public function testTellsRegenerationWhichStoreViewEveryUrlBelongsTo(): void
+    {
+        $this->secureBaseUrls[3] = 'https://shop.de/';
+        $manager = $this->createManager();
+
+        $manager->setStoreViewId(3);
+        $manager->purgeGeneral();
+
+        self::assertSame([3, 3, 3], $this->regenerationStoreIds);
+    }
+
     public function testReleasesLockWhenCollectingUrlsFails(): void
     {
         $this->categoryUrlsFailure = new Exception('Database connection lost');
@@ -208,7 +274,6 @@ final class VarnishActionManagerTest extends TestCase
         self::assertFalse($this->locked);
     }
 
-    #[Group('known-bug')]
     public function testRegeneratesEveryUrlOnceRegardlessOfNumberOfPurgeHosts(): void
     {
         $this->customPurgeHostsEnabled = true;
@@ -219,7 +284,6 @@ final class VarnishActionManagerTest extends TestCase
         $this->assertRegenerated([self::BASE_URL, self::BASE_URL . 'women.html', self::BASE_URL . 'men.html']);
     }
 
-    #[Group('known-bug')]
     public function testReadsStoreCodeInUrlSettingForSelectedStoreView(): void
     {
         $this->secureBaseUrls[2] = self::BASE_URL;
@@ -266,9 +330,12 @@ final class VarnishActionManagerTest extends TestCase
     private function createRegeneratorFactory(): VarnishUrlRegeneratorFactory
     {
         $regenerator = $this->createStub(VarnishUrlRegenerator::class);
-        $regenerator->method('addUrlToRegenerate')->willReturnCallback(function (string $url): void {
-            $this->regeneratedUrls[] = $url;
-        });
+        $regenerator->method('addUrlToRegenerate')->willReturnCallback(
+            function (string $url, ?int $storeId = null): void {
+                $this->regeneratedUrls[] = $url;
+                $this->regenerationStoreIds[] = $storeId;
+            }
+        );
         $regenerator->method('regenerate')->willReturnCallback(function (): void {
             $this->events[] = 'regenerate';
         });
@@ -352,7 +419,7 @@ final class VarnishActionManagerTest extends TestCase
                 throw $this->categoryUrlsFailure;
             }
 
-            return [['request_path' => 'women.html'], ['request_path' => 'men.html']];
+            return $this->categoryUrls;
         });
 
         return $provider;
@@ -361,6 +428,7 @@ final class VarnishActionManagerTest extends TestCase
     private function createPurgingConfig(): PurgingConfigProviderInterface
     {
         $purgingConfig = $this->createStub(PurgingConfigProviderInterface::class);
+        $purgingConfig->method('isPurgeEnabled')->willReturnCallback(fn (): bool => $this->purgeEnabled);
         $purgingConfig->method('isPurgeCustomHostEnabled')->willReturnCallback(fn (): bool => $this->customPurgeHostsEnabled);
         $purgingConfig->method('getCustomPurgeHosts')->willReturnCallback(fn (): array => $this->customPurgeHosts);
         $purgingConfig->method('getAdditionalHostForHeader')->willReturn('');

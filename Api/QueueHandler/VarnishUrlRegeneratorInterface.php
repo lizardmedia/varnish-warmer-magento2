@@ -16,9 +16,10 @@ interface VarnishUrlRegeneratorInterface
 {
     /**
      * @param string $url
+     * @param int|null $storeId store view the URL belongs to, used to warm the cache variant its visitors get
      * @return void
      */
-    public function addUrlToRegenerate(string $url): void;
+    public function addUrlToRegenerate(string $url, ?int $storeId = null): void;
 
     /**
      * @return void

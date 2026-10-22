@@ -24,9 +24,22 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <label>Exclude 301 Redirects from Cache Warming</label>
                 </field>
+                <field id="http_auth_username" type="text" showInDefault="1" translate="label comment">
+                    <label>HTTP authentication username</label>
+                    <comment>Fill in when the store is behind HTTP basic authentication, e.g. on staging</comment>
+                </field>
+                <field id="http_auth_password" type="obscure" showInDefault="1" translate="label">
+                    <label>HTTP authentication password</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
             </group>
             <group id="purge" showInDefault="1" translate="label">
                 <label>Purging</label>
+                <field id="enabled" type="select" showInDefault="1" translate="label comment" canRestore="1">
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <label>Enable purging</label>
+                    <comment>Set to No when Magento already invalidates Varnish by cache tags and this module should only warm the cache</comment>
+                </field>
                 <field id="different_purge_host" type="select" showInDefault="1" translate="label">
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <label>Use custom host for purging</label>

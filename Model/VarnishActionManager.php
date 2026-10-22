@@ -58,11 +58,6 @@ class VarnishActionManager implements VarnishActionManagerInterface
     private $storeViewId;
 
     /**
-     * @var bool
-     */
-    private $isStoreCodeUsedInUrls;
-
-    /**
      * @var StoreInterface
      */
     private $currentStoreView;
@@ -142,7 +137,6 @@ class VarnishActionManager implements VarnishActionManagerInterface
         $this->varnishUrlPurger = $varnishUrlPurgerFactory->create();
         $this->storeManager = $storeManager;
         $this->storeViewId = $this->getDefaultStoreViewId();
-        $this->isStoreCodeUsedInUrls = $this->isStoreCodeUsedInUrls();
     }
 
     /**
@@ -153,14 +147,14 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     public function purgeWildcard(): void
     {
-        $this->lock();
-        $this->addUrlToPurge('*');
-        $this->addUrlToRegenerate('');
-        $this->regenerateCategories();
-        $this->processProductsRegenerate();
-        $this->varnishUrlPurger->purge();
-        $this->varnishUrlRegenerator->regenerate();
-        $this->unlock();
+        $this->runLocked(function (): void {
+            $this->addUrlToPurge('*');
+            $this->addUrlToRegenerate('');
+            $this->regenerateCategories();
+            $this->processProductsRegenerate();
+            $this->varnishUrlPurger->purge();
+            $this->varnishUrlRegenerator->regenerate();
+        });
     }
 
     /**
@@ -183,14 +177,14 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     public function purgeAll(): void
     {
-        $this->lock();
-        $this->addUrlToPurge('');
-        $this->addUrlToRegenerate('');
-        $this->processCategoriesPurgeAndRegenerate();
-        $this->processProductsPurgeAndRegenerate();
-        $this->varnishUrlPurger->purge();
-        $this->varnishUrlRegenerator->regenerate();
-        $this->unlock();
+        $this->runLocked(function (): void {
+            $this->addUrlToPurge('');
+            $this->addUrlToRegenerate('');
+            $this->processCategoriesPurgeAndRegenerate();
+            $this->processProductsPurgeAndRegenerate();
+            $this->varnishUrlPurger->purge();
+            $this->varnishUrlRegenerator->regenerate();
+        });
     }
 
     /**
@@ -201,13 +195,13 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     public function purgeGeneral(): void
     {
-        $this->lock();
-        $this->addUrlToPurge('');
-        $this->addUrlToRegenerate('');
-        $this->processCategoriesPurgeAndRegenerate();
-        $this->varnishUrlPurger->purge();
-        $this->varnishUrlRegenerator->regenerate();
-        $this->unlock();
+        $this->runLocked(function (): void {
+            $this->addUrlToPurge('');
+            $this->addUrlToRegenerate('');
+            $this->processCategoriesPurgeAndRegenerate();
+            $this->varnishUrlPurger->purge();
+            $this->varnishUrlRegenerator->regenerate();
+        });
     }
 
     /**
@@ -218,12 +212,12 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     public function purgeHomepage(): void
     {
-        $this->lock();
-        $this->addUrlToPurge('');
-        $this->addUrlToRegenerate('');
-        $this->varnishUrlPurger->purge();
-        $this->varnishUrlRegenerator->regenerate();
-        $this->unlock();
+        $this->runLocked(function (): void {
+            $this->addUrlToPurge('');
+            $this->addUrlToRegenerate('');
+            $this->varnishUrlPurger->purge();
+            $this->varnishUrlRegenerator->regenerate();
+        });
     }
 
     /**
@@ -232,11 +226,11 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     public function purgeAndRegenerateProducts(): void
     {
-        $this->lock();
-        $this->processProductsPurgeAndRegenerate();
-        $this->varnishUrlPurger->purge();
-        $this->varnishUrlRegenerator->regenerate();
-        $this->unlock();
+        $this->runLocked(function (): void {
+            $this->processProductsPurgeAndRegenerate();
+            $this->varnishUrlPurger->purge();
+            $this->varnishUrlRegenerator->regenerate();
+        });
     }
 
     /**
@@ -275,6 +269,9 @@ class VarnishActionManager implements VarnishActionManagerInterface
     public function setStoreViewId(int $storeViewId): void
     {
         $this->storeViewId = $storeViewId;
+        $this->currentStoreView = null;
+        $this->purgeBaseUrls = null;
+        $this->regenBaseUrl = null;
     }
 
     /**
@@ -309,18 +306,6 @@ class VarnishActionManager implements VarnishActionManagerInterface
     }
 
     /**
-     * @return bool
-     */
-    private function isStoreCodeUsedInUrls(): bool
-    {
-        if (empty($this->isStoreCodeUsedInUrls)) {
-            $this->isStoreCodeUsedInUrls = $this->scopeConfig->isSetFlag(Store::XML_PATH_STORE_IN_URL);
-        }
-
-        return $this->isStoreCodeUsedInUrls;
-    }
-
-    /**
      * @param $relativeUrl
      * @param bool $autoRegenerate
      * @return void
@@ -328,13 +313,14 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function addUrlToPurge(string $relativeUrl, bool $autoRegenerate = false): void
     {
-        foreach ($this->getPurgeBaseUrls() as $purgeBaseUrl) {
-            $url = $purgeBaseUrl . $this->buildStoreCodePartIfUsed() .  $relativeUrl;
-            $this->varnishUrlPurger->addUrlToPurge($url);
-
-            if ($autoRegenerate) {
-                $this->addUrlToRegenerate($relativeUrl);
+        if ($this->purgingConfigProvider->isPurgeEnabled()) {
+            foreach ($this->getPurgeBaseUrls() as $purgeBaseUrl) {
+                $this->varnishUrlPurger->addUrlToPurge($purgeBaseUrl . $this->buildStoreCodePartIfUsed() . $relativeUrl);
             }
+        }
+
+        if ($autoRegenerate) {
+            $this->addUrlToRegenerate($relativeUrl);
         }
     }
 
@@ -346,7 +332,7 @@ class VarnishActionManager implements VarnishActionManagerInterface
     private function addUrlToRegenerate(string $relativeUrl): void
     {
         $url = $this->getRegenBaseUrl() . $this->buildStoreCodePartIfUsed() . $relativeUrl;
-        $this->varnishUrlRegenerator->addUrlToRegenerate($url);
+        $this->varnishUrlRegenerator->addUrlToRegenerate($url, $this->storeViewId);
     }
 
     /**
@@ -355,21 +341,13 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function buildStoreCodePartIfUsed(): string
     {
-        if ($this->isStoreCodeUsedInUrls) {
-            return sprintf('%s/', $this->getStoreCode());
+        $currentStoreView = $this->getCurrentStoreView();
+
+        if ($currentStoreView instanceof Store && $currentStoreView->isUseStoreInUrl()) {
+            return sprintf('%s/', $currentStoreView->getCode());
         }
 
         return '';
-    }
-
-    /**
-     * @return string
-     * @throws NoSuchEntityException
-     */
-    private function getStoreCode(): string
-    {
-        $currentStore = $this->getCurrentStoreView();
-        return $currentStore->getCode();
     }
 
     /**
@@ -442,7 +420,7 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function getAllProductsUrls(): array
     {
-        return $this->productUrlProvider->getActiveProductsUrls();
+        return $this->filterUrlsOfCurrentStoreView($this->productUrlProvider->getActiveProductsUrls());
     }
 
     /**
@@ -451,7 +429,7 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function getProductUrls(int $productId): array
     {
-        return $this->productUrlProvider->getProductUrls($productId);
+        return $this->filterUrlsOfCurrentStoreView($this->productUrlProvider->getProductUrls($productId));
     }
 
     /**
@@ -459,23 +437,30 @@ class VarnishActionManager implements VarnishActionManagerInterface
      */
     private function getCategories(): array
     {
-        return $this->categoryUrlProvider->getActiveCategoriesUrls();
+        return $this->filterUrlsOfCurrentStoreView($this->categoryUrlProvider->getActiveCategoriesUrls());
+    }
+
+    private function filterUrlsOfCurrentStoreView(array $urlRewrites): array
+    {
+        return array_filter(
+            $urlRewrites,
+            fn (array $urlRewrite): bool => !isset($urlRewrite['store_id'])
+                || (int) $urlRewrite['store_id'] === $this->storeViewId
+        );
     }
 
     /**
      * @return void
      */
-    private function lock(): void
+    private function runLocked(callable $operation): void
     {
         $this->lockHandler->lock();
-    }
 
-    /**
-     * @return void
-     */
-    private function unlock(): void
-    {
-        $this->lockHandler->unlock();
+        try {
+            $operation();
+        } finally {
+            $this->lockHandler->unlock();
+        }
     }
 
     /**
@@ -486,7 +471,7 @@ class VarnishActionManager implements VarnishActionManagerInterface
         if ($this->purgingConfigProvider->isPurgeCustomHostEnabled()) {
             $this->purgeBaseUrls = $this->purgingConfigProvider->getCustomPurgeHosts();
         } else {
-            $baseUrl = $this->scopeConfig->getValue(
+            $baseUrl = (string) $this->scopeConfig->getValue(
                 Store::XML_PATH_SECURE_BASE_URL,
                 ScopeInterface::SCOPE_STORE,
                 $this->storeViewId

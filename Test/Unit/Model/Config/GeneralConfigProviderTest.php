@@ -12,6 +12,7 @@ namespace LizardMedia\VarnishWarmer\Test\Unit\Model\Config;
 use LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider;
 use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -70,12 +71,29 @@ final class GeneralConfigProviderTest extends TestCase
         self::assertFalse($this->createProvider()->exclude301Redirects());
     }
 
+    public function testReadsHttpAuthenticationCredentialsWithDecryptedPassword(): void
+    {
+        self::assertSame('', $this->createProvider()->getHttpAuthUsername());
+
+        $this->config['lm_varnish/general/http_auth_username'] = 'stage';
+        $this->config['lm_varnish/general/http_auth_password'] = 'encrypted-secret';
+
+        self::assertSame('stage', $this->createProvider()->getHttpAuthUsername());
+        self::assertSame('decrypted(encrypted-secret)', $this->createProvider()->getHttpAuthPassword());
+    }
+
     private function createProvider(): GeneralConfigProvider
     {
         $scopeConfig = $this->createStub(ScopeConfigInterface::class);
         $scopeConfig->method('getValue')->willReturnCallback(fn (string $path) => $this->config[$path] ?? null);
         $scopeConfig->method('isSetFlag')->willReturnCallback(fn (string $path): bool => (bool) ($this->config[$path] ?? false));
 
-        return Instantiator::create(GeneralConfigProvider::class, [ScopeConfigInterface::class => $scopeConfig]);
+        $encryptor = $this->createStub(EncryptorInterface::class);
+        $encryptor->method('decrypt')->willReturnCallback(static fn (string $data): string => "decrypted($data)");
+
+        return Instantiator::create(GeneralConfigProvider::class, [
+            ScopeConfigInterface::class => $scopeConfig,
+            EncryptorInterface::class => $encryptor,
+        ]);
     }
 }

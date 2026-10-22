@@ -12,12 +12,20 @@ namespace LizardMedia\VarnishWarmer\Test\Unit\Model\Config;
 use LizardMedia\VarnishWarmer\Model\Config\PurgingConfigProvider;
 use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class PurgingConfigProviderTest extends TestCase
 {
     private array $config = [];
+
+    public function testReadsWhetherPurgingIsEnabled(): void
+    {
+        $this->config['lm_varnish/purge/enabled'] = '1';
+        self::assertTrue($this->createProvider()->isPurgeEnabled());
+
+        $this->config['lm_varnish/purge/enabled'] = '0';
+        self::assertFalse($this->createProvider()->isPurgeEnabled());
+    }
 
     public function testReadsWhetherCustomPurgeHostIsEnabled(): void
     {
@@ -55,10 +63,9 @@ final class PurgingConfigProviderTest extends TestCase
         self::assertSame('shop.test', $this->createProvider()->getAdditionalHostForHeader());
     }
 
-    #[Group('known-bug')]
-    public function testIgnoresWhitespaceAroundCustomPurgeHosts(): void
+    public function testIgnoresWhitespaceAndEmptyEntriesInCustomPurgeHosts(): void
     {
-        $this->config['lm_varnish/purge/custom_host'] = 'http://varnish-1:6081, http://varnish-2:6081';
+        $this->config['lm_varnish/purge/custom_host'] = 'http://varnish-1:6081, http://varnish-2:6081,';
 
         self::assertSame(
             ['http://varnish-1:6081', 'http://varnish-2:6081'],

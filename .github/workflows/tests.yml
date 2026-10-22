@@ -31,6 +31,9 @@ jobs:
           extensions: bcmath, ctype, curl, dom, gd, iconv, intl, mbstring, openssl, pdo_mysql, simplexml, soap, sodium, xsl, zip
           coverage: none
 
+      - name: Install Magento packages from the Mage-OS mirror, so pull requests from forks need no repo.magento.com keys
+        run: sed -i 's#https://repo.magento.com/#https://mirror.mage-os.org/#' composer.json
+
       - name: Pin all Magento packages to the release projects run, including its known advisories
         run: |
           composer config policy.advisories.block false

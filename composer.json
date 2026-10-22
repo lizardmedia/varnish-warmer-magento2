@@ -21,7 +21,7 @@
     "repositories": [
         {
             "type": "composer",
-            "url": "https://mirror.mage-os.org/"
+            "url": "https://repo.magento.com/"
         }
     ],
     "config": {

@@ -138,8 +138,9 @@ If you have a powerful server you can modify those numbers to use more resources
 
 ### Tests
 
-CI runs the suite against whole Magento releases the projects use (see ``.github/workflows/tests.yml``).
-To do the same locally, pin a release and install (do not commit the resulting ``composer.json`` change):
+CI runs the suite against whole Magento releases the projects use (see ``.github/workflows/tests.yml``),
+installing Magento packages from the Mage-OS mirror. Locally composer reads them from repo.magento.com,
+so it needs your Magento access keys. Pin a release and install (do not commit the resulting ``composer.json`` change):
 ```
 composer config policy.advisories.block false
 composer require --no-update magento/product-community-edition:2.4.6-p15

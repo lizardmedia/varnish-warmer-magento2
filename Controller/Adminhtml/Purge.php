@@ -31,6 +31,8 @@ use Magento\Framework\Message\MessageInterface;
  */
 abstract class Purge extends Action
 {
+    public const ADMIN_RESOURCE = 'LizardMedia_VarnishWarmer::cache_handling';
+
     /**
      * @var ManagerInterface
      */
@@ -134,12 +136,10 @@ abstract class Purge extends Action
         $this->messageManager->addMessage(
             $this->messageFactory->create(
                 MessageInterface::TYPE_WARNING,
-                sprintf(
-                    __(
-                        'LizardMedia: cache is already being purged in background '
-                        . '(started at: %s), '
-                        . 'cannot run again until it finishes. <br />%s'
-                    ),
+                (string) __(
+                    'LizardMedia: cache is already being purged in background '
+                    . '(started at: %1), '
+                    . 'cannot run again until it finishes. <br />%2',
                     $this->varnishActionManager->getLockMessage(),
                     $this->queueProgressBarRenderer->getProgressHtml($this->queueProgressLogger->getProgressData())
                 )
@@ -173,9 +173,10 @@ abstract class Purge extends Action
     protected function getAdditionalParams(): string
     {
         $additionalParams = '';
+        $storeViewId = (int) $this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM);
 
-        if ($this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM)) {
-            $additionalParams .= ' --store=' . $this->getRequest()->getParam(Form::STORE_VIEW_FORM_PARAM);
+        if ($storeViewId > 0) {
+            $additionalParams .= ' --store=' . $storeViewId;
         }
 
         return $additionalParams;

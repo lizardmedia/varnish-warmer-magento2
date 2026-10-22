@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace LizardMedia\VarnishWarmer\Test\Unit\Controller\Adminhtml\PurgeMultiple;
 
 use LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple\Run;
+use LizardMedia\VarnishWarmer\Model\FormDataProvider\MultipleUrlsPurgeCommandsProvider;
 use LizardMedia\VarnishWarmer\Test\Unit\Instantiator;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Helper\Data as BackendHelper;
@@ -17,7 +18,8 @@ use Magento\Backend\Model\Session;
 use Magento\Framework\App\ActionFlag;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http as HttpResponse;
-use PHPUnit\Framework\Attributes\Group;
+use Magento\Framework\Message\ManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class RunTest extends TestCase
@@ -25,25 +27,38 @@ final class RunTest extends TestCase
     private array $requestParams = [];
     private array $requestedAdminRoutes = [];
     private array $redirectUrls = [];
+    private array $errorMessages = [];
 
-    public function testRedirectsToSelectedProcessWithStoreView(): void
+    public static function purgeProcesses(): array
     {
-        $this->requestParams = ['process_url' => 'lizardmediavarnish/purge/purgeall', 'store_id' => '2'];
+        $processPaths = array_keys((new MultipleUrlsPurgeCommandsProvider())->getCommandArray());
+
+        return array_combine(
+            $processPaths,
+            array_map(static fn (string $processPath): array => [$processPath], $processPaths)
+        );
+    }
+
+    #[DataProvider('purgeProcesses')]
+    public function testRedirectsToSelectedProcessWithStoreView(string $processPath): void
+    {
+        $this->requestParams = ['process_url' => $processPath, 'store_id' => '2'];
 
         $this->createController()->execute();
 
-        self::assertSame([['lizardmediavarnish/purge/purgeall', ['store_id' => '2']]], $this->requestedAdminRoutes);
-        self::assertSame(['https://admin.test/lizardmediavarnish/purge/purgeall'], $this->redirectUrls);
+        self::assertSame([[$processPath, ['store_id' => '2']]], $this->requestedAdminRoutes);
+        self::assertSame(['https://admin.test/' . $processPath], $this->redirectUrls);
+        self::assertSame([], $this->errorMessages);
     }
 
-    #[Group('known-bug')]
-    public function testDoesNotRedirectToAdminRouteOutsideOfPurgeProcesses(): void
+    public function testRejectsAdminRouteOutsideOfPurgeProcesses(): void
     {
         $this->requestParams = ['process_url' => 'admin/user/delete', 'store_id' => '2'];
 
         $this->createController()->execute();
 
-        self::assertNotContains('admin/user/delete', array_column($this->requestedAdminRoutes, 0));
+        self::assertSame([['lizardmediavarnish/purgemultiple/form', []]], $this->requestedAdminRoutes);
+        self::assertCount(1, $this->errorMessages);
     }
 
     private function createController(): Run
@@ -67,13 +82,26 @@ final class RunTest extends TestCase
             return 'https://admin.test/' . $route;
         });
 
+        $messageManager = $this->createStub(ManagerInterface::class);
+        $messageManager->method('addErrorMessage')->willReturnCallback(
+            function ($message) use ($messageManager): ManagerInterface {
+                $this->errorMessages[] = (string) $message;
+
+                return $messageManager;
+            }
+        );
+
         $context = $this->createStub(Context::class);
         $context->method('getRequest')->willReturn($request);
         $context->method('getResponse')->willReturn($response);
         $context->method('getHelper')->willReturn($backendHelper);
+        $context->method('getMessageManager')->willReturn($messageManager);
         $context->method('getSession')->willReturn($this->createStub(Session::class));
         $context->method('getActionFlag')->willReturn($this->createStub(ActionFlag::class));
 
-        return Instantiator::create(Run::class, [Context::class => $context]);
+        return Instantiator::create(Run::class, [
+            Context::class => $context,
+            MultipleUrlsPurgeCommandsProvider::class => new MultipleUrlsPurgeCommandsProvider(),
+        ]);
     }
 }

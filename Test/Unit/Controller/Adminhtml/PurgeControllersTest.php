@@ -29,7 +29,6 @@ use Magento\Framework\Message\Factory as MessageFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Message\MessageInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
@@ -158,7 +157,6 @@ final class PurgeControllersTest extends TestCase
         self::assertSame([['lm-varnish:cache-refresh-url', 'bizuteria', '--store=1']], $this->argumentsPassedToMagento());
     }
 
-    #[Group('known-bug')]
     #[DataProvider('lockRespectingPurgeActions')]
     public function testShowsLockWarningWithStartTimeAndProgressWhenLocked(string $controllerClass): void
     {
@@ -172,7 +170,6 @@ final class PurgeControllersTest extends TestCase
         self::assertSame(['admin/dashboard/index'], $this->redirectPaths);
     }
 
-    #[Group('known-bug')]
     public function testSingleUrlPurgeShowsLockWarningWhenLockedWithoutForce(): void
     {
         $this->locked = true;
@@ -184,7 +181,6 @@ final class PurgeControllersTest extends TestCase
         self::assertSame(['admin/dashboard/index'], $this->redirectPaths);
     }
 
-    #[Group('known-bug')]
     #[DataProvider('shellInjectionUrls')]
     public function testSingleUrlReachesCommandAsOneLiteralArgument(string $url): void
     {
@@ -195,7 +191,6 @@ final class PurgeControllersTest extends TestCase
         self::assertSame([['lm-varnish:cache-refresh-url', $url, '--store=1']], $this->argumentsPassedToMagento());
     }
 
-    #[Group('known-bug')]
     #[DataProvider('purgeActions')]
     public function testNonNumericStoreViewDoesNotReachShell(string $controllerClass, string $command): void
     {

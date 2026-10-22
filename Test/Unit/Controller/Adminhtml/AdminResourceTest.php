@@ -19,7 +19,6 @@ use LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeMultiple\Run as PurgeMul
 use LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeSingle\Form as PurgeSingleForm;
 use LizardMedia\VarnishWarmer\Controller\Adminhtml\PurgeSingle\Run as PurgeSingleRun;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class AdminResourceTest extends TestCase
@@ -39,7 +38,6 @@ final class AdminResourceTest extends TestCase
         ];
     }
 
-    #[Group('known-bug')]
     #[DataProvider('adminControllers')]
     public function testRequiresCacheHandlingPermission(string $controllerClass): void
     {

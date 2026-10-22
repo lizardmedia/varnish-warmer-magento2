@@ -9,7 +9,7 @@
             <resource id="Magento_Backend::admin">
                 <resource id="LizardMedia_VarnishWarmer::main_menu" title="LizardMedia Varnish Warmer" sortOrder="80">
                     <resource id="LizardMedia_VarnishWarmer::cache_handling" title="Cache handling" sortOrder="10"/>
-                    <resource id="LizardMedia_VarnishWarmer::setings" title="Settings" sortOrder="20"/>
+                    <resource id="LizardMedia_VarnishWarmer::settings" title="Settings" sortOrder="20"/>
                 </resource>
             </resource>
         </resources>

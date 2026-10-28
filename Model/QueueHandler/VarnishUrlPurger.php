@@ -15,12 +15,12 @@ namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\Config\PurgingConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
+use GuzzleHttp\Psr7\Request;
 use LizardMedia\VarnishWarmer\Api\QueueHandler\VarnishUrlPurgerInterface;
-use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory;
+use LizardMedia\VarnishWarmer\Model\Adapter\Guzzle\ClientFactory;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Factory;
-use React\HttpClient\Response;
-use RuntimeException;
 
 /**
  * Class VarnishUrlPurger
@@ -44,7 +44,6 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
      * @param GeneralConfigProviderInterface $configProvider
      * @param LoggerInterface $logger
      * @param QueueProgressLoggerInterface $queueProgressLogger
-     * @param Factory $loopFactory
      * @param ClientFactory $clientFactory
      * @param PurgingConfigProviderInterface $purgingConfigProvider
      */
@@ -52,11 +51,10 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
         GeneralConfigProviderInterface $configProvider,
         LoggerInterface $logger,
         QueueProgressLoggerInterface $queueProgressLogger,
-        Factory $loopFactory,
         ClientFactory $clientFactory,
         PurgingConfigProviderInterface $purgingConfigProvider
     ) {
-        parent::__construct($configProvider, $logger, $queueProgressLogger, $loopFactory, $clientFactory);
+        parent::__construct($configProvider, $logger, $queueProgressLogger, $clientFactory);
         $this->purgingConfigProvider = $purgingConfigProvider;
     }
 
@@ -66,8 +64,7 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
      */
     public function addUrlToPurge(string $url): void
     {
-        $this->urls[] = $url;
-        $this->total++;
+        $this->queue(new Request('PURGE', $url, $this->buildHeaders()));
     }
 
     /**
@@ -94,44 +91,11 @@ class VarnishUrlPurger extends AbstractQueueHandler implements VarnishUrlPurgerI
         return self::PROCESS_TYPE;
     }
 
-    /**
-     *
-     * @param string $url
-     * @return void
-     */
-    protected function createRequest(string $url): void
+    protected function handleResponse(RequestInterface $request, ResponseInterface $response): void
     {
-        $client = $this->clientFactory->create($this->loop);
-        $request = $client->request('PURGE', $url, $this->buildHeaders());
-
-        $request->on('error', function (RuntimeException $exception) use ($url) {
-            $this->logger->error($exception->getMessage(), [$url]);
-        });
-
-        $request->on('response', function (Response $response) use ($url) {
-            $responseCode = $response->getCode();
-            $responseHeaders = $response->getHeaders();
-
-            $response->on(
-                'end',
-                function () use ($url, $responseCode, $responseHeaders) {
-                    $this->counter++;
-                    $this->log($url, $responseCode, $responseHeaders);
-                    $this->logProgress();
-                }
-            );
-
-            $response->on('error', function (RuntimeException $exception) use ($url) {
-                $this->logger->error(
-                    $exception->getMessage(),
-                    [
-                        'url' => $url
-                    ]
-                );
-            });
-        });
-
-        $request->end();
+        $this->counter++;
+        $this->log($request, $response, $this->getResponseHeaders($response));
+        $this->logProgress();
     }
 
     /**

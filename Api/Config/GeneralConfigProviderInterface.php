@@ -28,4 +28,8 @@ interface GeneralConfigProviderInterface
      * @return bool
      */
     public function exclude301Redirects(): bool;
+
+    public function getHttpAuthUsername(): string;
+
+    public function getHttpAuthPassword(): string;
 }

@@ -11,6 +11,9 @@
                 <max_concurrent_purge>4</max_concurrent_purge>
                 <exclude_301_redirects>1</exclude_301_redirects>
             </general>
+            <purge>
+                <enabled>1</enabled>
+            </purge>
         </lm_varnish>
     </default>
 </config>

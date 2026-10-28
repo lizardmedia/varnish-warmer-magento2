@@ -32,6 +32,10 @@ These instructions will get you a copy of the project up and running on your loc
 * Magento 2.3/2.4
 * PHP 7.1/7.2/7.3/7.4
 
+##### For release 3.0
+* Magento 2.4.6 - 2.4.9
+* PHP 8.1 - 8.5
+
 ### Installing
 
 #### Download the module
@@ -53,7 +57,7 @@ app/code/LizardMedia/VarnishWarmer
 If you use ZIP file you will need to install the dependencies of the module
 manually
 ```
-composer require react/http-client:^0.5.9
+composer require guzzlehttp/guzzle:^7.5
 ```
 
 #### Install the module
@@ -79,7 +83,7 @@ The commands can be run using Magento built-in CLI:
 * ``lm-varnish:cache-purge-wildcard`` - purges * and regenerates homepage, categories and products
 * ``lm-varnish:cache-purge-all`` - purges and regenerates homepage, categories and products
 * ``lm-varnish:cache-purge-force`` - purges * without regenerating. Omits lock check
-* ``lm-varnish:cache-purge-products`` - purges and regenerates products 
+* ``lm-varnish:regenerate-products-cache`` - purges and regenerates products
 * ``lm-varnish:cache-refresh-url`` - purges and regenerates single URL given as argument
 
 ## Command options ##
@@ -88,12 +92,65 @@ The commands can be run using Magento built-in CLI:
 php bin/magento lm-varnish:cache-refresh-url "*" --store=1
 ```
 
+## Configuration
+
+``Stores > Configuration > LizardMedia Varnish > Varnish Cache Warmer``
+
+* General
+  * number of concurrent regeneration and purge requests
+  * exclude 301 redirects from warming
+  * HTTP authentication username and password - fill in when the store is behind HTTP basic authentication,
+  e.g. on staging
+* Purging
+  * Enable purging - set to No when Magento already invalidates Varnish by cache tags and the module should
+  only warm the cache. Set it to No as well without Varnish: warming fills Magento's built-in full page cache
+  the same way, since it also keeps a separate entry per ``X-Magento-Vary`` cookie
+  * custom purge hosts (comma separated, one per Varnish server) and the Host header sent with them
+
+### Cache variants
+
+Every URL is warmed once without a cookie and, when guests of its store view get an ``X-Magento-Vary`` cookie,
+once more with that cookie. The cookie is calculated the same way the storefront does it, including values other
+modules add to the HTTP context with plugins on ``Magento\Framework\App\Http\Context::getVaryString()``.
+To warm more variants add an after plugin on
+``LizardMedia\VarnishWarmer\Model\HttpContext\VaryCookieProvider::getVaryCookies()``.
+
+## Upgrading from 2.x
+
+* Remove composer patches applied to this module, everything they fixed is included.
+* If purging was commented out with a patch, set ``lm_varnish/purge/enabled`` to ``0`` instead
+(``bin/magento config:set lm_varnish/purge/enabled 0`` or ``app/etc/config.php``).
+* Classes extending ``LizardMedia\VarnishWarmer\Model\QueueHandler\AbstractQueueHandler`` or replacing
+``VarnishUrlRegenerator`` need to be removed or rewritten. Cache variants, response codes and HTTP authentication
+are built in now. Queue handlers add PSR-7 requests with ``queue()`` and receive them in ``handleResponse()``.
+* Admin roles without full access need ``LizardMedia Varnish Warmer > Cache handling`` to use the admin actions.
+* API changes: ``PurgingConfigProviderInterface::isPurgeEnabled()``,
+``GeneralConfigProviderInterface::getHttpAuthUsername()`` and ``getHttpAuthPassword()``,
+``VarnishUrlRegeneratorInterface::addUrlToRegenerate(string $url, ?int $storeId = null)``.
+URL providers return ``store_id`` next to ``request_path``.
+* Run ``bin/magento setup:di:compile`` after the upgrade.
+
 ## For developers
 
 The number of process used for purging and regenerating Varnish cache can be customized
 in the admin panel. The max number of processes is specified in 
 ``LizardMedia\VarnishWarmer\Model\Config\GeneralConfigProvider``
 If you have a powerful server you can modify those numbers to use more resources.
+
+### Tests
+
+CI runs the suite against whole Magento releases the projects use (see ``.github/workflows/tests.yml``),
+installing Magento packages from the Mage-OS mirror. Locally composer reads them from repo.magento.com,
+so it needs your Magento access keys. Pin a release and install (do not commit the resulting ``composer.json`` change):
+```
+composer config policy.advisories.block false
+composer require --no-update magento/product-community-edition:2.4.6-p15
+composer update
+```
+
+* ``vendor/bin/phpunit`` runs the contract tests: behaviour that must not change between releases.
+* ``vendor/bin/phpunit --group known-bug`` runs tests describing known defects. They fail until the
+defect is fixed, and the fix removes the test from the ``known-bug`` group.
 
 ## Contributing
 

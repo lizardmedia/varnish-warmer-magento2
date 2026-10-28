@@ -14,6 +14,8 @@ namespace LizardMedia\VarnishWarmer\Api\Config;
  */
 interface PurgingConfigProviderInterface
 {
+    public function isPurgeEnabled(): bool;
+
     /**
      * @return bool
      */

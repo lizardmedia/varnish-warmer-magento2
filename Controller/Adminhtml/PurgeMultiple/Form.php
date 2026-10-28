@@ -22,6 +22,8 @@ use Magento\Framework\View\Result\PageFactory;
  */
 class Form extends Action
 {
+    public const ADMIN_RESOURCE = 'LizardMedia_VarnishWarmer::cache_handling';
+
     /**
      * @var PageFactory
      */

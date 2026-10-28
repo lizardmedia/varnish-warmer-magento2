@@ -75,7 +75,7 @@ class CategoryUrlProvider implements CategoryUrlProviderInterface
                 [
                     'u' => $connection->getTableName('url_rewrite')
                 ],
-                'request_path'
+                ['request_path', 'store_id']
             )->where(
                 'u.entity_type=?',
                 'category'

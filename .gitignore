@@ -4,3 +4,5 @@ vendor/
 coverage/
 .env
 docker-compose.yml
+composer.lock
+.phpunit.cache/

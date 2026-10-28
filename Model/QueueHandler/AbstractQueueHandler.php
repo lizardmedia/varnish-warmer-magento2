@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace LizardMedia\VarnishWarmer\Model\QueueHandler;
 
+use Generator;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Promise\Each;
+use GuzzleHttp\Promise\PromiseInterface;
 use LizardMedia\VarnishWarmer\Api\Config\GeneralConfigProviderInterface;
 use LizardMedia\VarnishWarmer\Api\ProgressHandler\QueueProgressLoggerInterface;
-use LizardMedia\VarnishWarmer\Model\Adapter\ReactPHP\ClientFactory;
+use LizardMedia\VarnishWarmer\Model\Adapter\Guzzle\ClientFactory;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use React\EventLoop\Factory;
-use React\EventLoop\LoopInterface;
+use Throwable;
 
 /**
  * Class AbstractQueueHandler
@@ -41,11 +46,6 @@ abstract class AbstractQueueHandler
     protected $queueProgressLogger;
 
     /**
-     * @var LoopInterface
-     */
-    protected $loop;
-
-    /**
      * @var int
      */
     protected $counter = 0;
@@ -55,100 +55,89 @@ abstract class AbstractQueueHandler
      */
     protected $total = 0;
 
-    /**
-     * @var array
-     */
-    protected $urls = [];
+    private array $requests = [];
+
+    private ClientInterface $client;
 
     /**
-     * @var ClientFactory
-     */
-    protected $clientFactory;
-
-    /**
-     * AbstractQueueHandler constructor.
      * @param GeneralConfigProviderInterface $configProvider
      * @param LoggerInterface $logger
      * @param QueueProgressLoggerInterface $queueProgressLogger
-     * @param Factory $loopFactory
      * @param ClientFactory $clientFactory
      */
     public function __construct(
         GeneralConfigProviderInterface $configProvider,
         LoggerInterface $logger,
         QueueProgressLoggerInterface $queueProgressLogger,
-        Factory $loopFactory,
         ClientFactory $clientFactory
     ) {
         $this->configProvider = $configProvider;
         $this->logger = $logger;
         $this->queueProgressLogger = $queueProgressLogger;
-        $this->loop = $loopFactory::create();
-        $this->clientFactory = $clientFactory;
+        $this->client = $clientFactory->create();
     }
 
-    /**
-     * @return int
-     */
     abstract protected function getMaxNumberOfProcesses(): int;
 
-    /**
-     * @return string
-     */
     abstract protected function getQueueProcessType(): string;
 
-    /**
-     * @param string $url
-     * @return void
-     */
-    abstract protected function createRequest(string $url): void;
+    abstract protected function handleResponse(RequestInterface $request, ResponseInterface $response): void;
 
-    /**
-     * @return void
-     */
-    protected function runQueue(): void
+    protected function queue(RequestInterface $request): void
     {
-        while (!empty($this->urls)) {
-            for ($i = 0; $i < $this->getMaxNumberOfProcesses(); $i++) {
-                if (!empty($this->urls)) {
-                    $this->createRequest(array_pop($this->urls));
-                }
-            }
-
-            $this->loop->run();
-        }
+        $this->requests[] = $request;
+        $this->total++;
     }
 
-    /**
-     * @param string $url
-     * @param int|null $code
-     * @param array|null $headers
-     * @return void
-     */
-    protected function log(string $url, ?int $code = null, ?array $headers = []): void
+    protected function runQueue(): void
     {
-        unset($headers['Set-Cookie']);
-        $context = ['url' => $url, 'code' => $code, 'headers' => implode(',', $headers)];
+        Each::ofLimit($this->sendRequests(), max(1, $this->getMaxNumberOfProcesses()))->wait();
+    }
 
-        $this->logger->debug(
-            "{$this->counter}/{$this->total}",
-            $context
+    protected function log(RequestInterface $request, ResponseInterface $response, array $responseHeaders = []): void
+    {
+        unset($responseHeaders['Set-Cookie']);
+        $context = [
+            'url' => (string) $request->getUri(),
+            'code' => $response->getStatusCode(),
+            'headers' => implode(',', $responseHeaders),
+        ];
+        if ($request->hasHeader('Cookie')) {
+            $context['cookie'] = $request->getHeaderLine('Cookie');
+        }
+
+        $this->logger->debug("{$this->counter}/{$this->total}", $context);
+    }
+
+    protected function getResponseHeaders(ResponseInterface $response): array
+    {
+        return array_map(
+            static fn (array $values): string => implode(', ', $values),
+            $response->getHeaders()
         );
     }
 
-    /**
-     * @return int
-     */
-    protected function getNumberOfParallelProcesses(): int
-    {
-        return min($this->getMaxNumberOfProcesses(), count($this->urls));
-    }
-
-    /**
-     * @return void
-     */
     protected function logProgress(): void
     {
         $this->queueProgressLogger->logProgress($this->getQueueProcessType(), $this->counter, $this->total);
+    }
+
+    /**
+     * @return Generator<PromiseInterface>
+     */
+    private function sendRequests(): Generator
+    {
+        while (!empty($this->requests)) {
+            $request = array_pop($this->requests);
+
+            yield $this->client->sendAsync($request)->then(
+                function (ResponseInterface $response) use ($request): void {
+                    $this->handleResponse($request, $response);
+                },
+                function (Throwable $exception) use ($request): void {
+                    $this->logger->error($exception->getMessage(), ['url' => (string) $request->getUri()]);
+                }
+            );
+        }
     }
 }

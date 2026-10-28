@@ -51,7 +51,7 @@ class Run extends Purge
     protected function getAdditionalParams(): string
     {
         $url = (string) $this->getRequest()->getParam(Form::URL_FORM_PARAM);
-        $additionalParams = " \"{$url}\"";
+        $additionalParams = ' ' . escapeshellarg($url);
         $additionalParams .= parent::getAdditionalParams();
         return $additionalParams;
     }
